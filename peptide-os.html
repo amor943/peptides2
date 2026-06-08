@@ -1,0 +1,1622 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="Peptide OS"/>
+<meta name="theme-color" content="#ffffff"/>
+<link rel="manifest" href="manifest.json"/>
+<link rel="apple-touch-icon" href="icon-192.png"/>
+<title>PEPTIDE OS 🥊</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=JetBrains+Mono:wght@400;500;700&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --bg:#080b0f;--surface:#0d1117;--card:#111820;--border:#1a2520;
+  --green:#00ff78;--greenDim:#00c45e;--orange:#ff6b2b;
+  --purple:#a78bfa;--yellow:#fbbf24;--red:#f87171;--blue:#5bb8ff;
+  --text:#e2f0e8;--textDim:#4a6a4a;--muted:#3a4a3a;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;min-height:100vh;overflow-x:hidden}
+::-webkit-scrollbar{width:2px}
+::-webkit-scrollbar-thumb{background:#1e2a1e;border-radius:2px}
+input,textarea{font-family:'JetBrains Mono',monospace!important;background:transparent;border:none;outline:none;color:inherit;width:100%}
+input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
+button{font-family:'Outfit',sans-serif!important;cursor:pointer;border:none;background:none}
+
+/* BG GRID */
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(0,255,120,.018) 1px,transparent 1px),linear-gradient(90deg,rgba(0,255,120,.018) 1px,transparent 1px);background-size:48px 48px;pointer-events:none;z-index:0}
+
+/* ANIMATIONS */
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+@keyframes glow{0%,100%{box-shadow:0 0 8px rgba(0,255,120,.25)}50%{box-shadow:0 0 28px rgba(0,255,120,.55)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes scanline{0%{transform:translateY(-100%)}100%{transform:translateY(100vh)}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+.fu{animation:fadeUp .35s ease both}
+.fu1{animation:fadeUp .35s .06s ease both}
+.fu2{animation:fadeUp .35s .12s ease both}
+.fu3{animation:fadeUp .35s .18s ease both}
+.pulse{animation:pulse 2s ease-in-out infinite}
+.glow-a{animation:glow 3s ease-in-out infinite}
+.float-a{animation:float 3s ease-in-out infinite}
+.spin-a{animation:spin 1s linear infinite;display:inline-block}
+
+/* EVOLUTION MODAL */
+#evo-overlay{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;pointer-events:none;opacity:0;transition:opacity .4s ease}
+#evo-overlay.show{opacity:1;pointer-events:all}
+#evo-backdrop{position:absolute;inset:0;background:rgba(0,0,0,.85);backdrop-filter:blur(12px)}
+#evo-modal{position:relative;z-index:1;width:100%;max-width:340px;border-radius:24px;padding:32px 24px;text-align:center;border:2px solid;transform:scale(.8) translateY(30px);transition:transform .5s cubic-bezier(.34,1.56,.64,1),opacity .4s ease;opacity:0}
+#evo-overlay.show #evo-modal{transform:scale(1) translateY(0);opacity:1}
+@keyframes evoEmoji{0%{transform:scale(.5) rotate(-15deg);opacity:0}60%{transform:scale(1.2) rotate(5deg)}100%{transform:scale(1) rotate(0deg);opacity:1}}
+@keyframes particleFly{0%{transform:translate(0,0) scale(1);opacity:1}100%{transform:translate(var(--tx),var(--ty)) scale(0);opacity:0}}
+@keyframes shimmerText{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+@keyframes popIn{0%{transform:scale(0);opacity:0}70%{transform:scale(1.1)}100%{transform:scale(1);opacity:1}}
+@keyframes shakeSuccess{0%,100%{transform:translateX(0)}20%{transform:translateX(-4px)}40%{transform:translateX(4px)}60%{transform:translateX(-2px)}80%{transform:translateX(2px)}}
+#evo-emoji-big{font-size:80px;display:block;margin-bottom:16px;animation:evoEmoji .6s .2s cubic-bezier(.34,1.56,.64,1) both}
+#evo-label{font-size:11px;font-weight:800;letter-spacing:.25em;margin-bottom:8px;opacity:.7}
+#evo-name{font-family:'Bebas Neue';font-size:44px;letter-spacing:.08em;line-height:1;margin-bottom:10px}
+#evo-desc{font-size:13px;line-height:1.65;opacity:.8;margin-bottom:20px}
+#evo-msg{font-size:12px;line-height:1.7;padding:12px 14px;border-radius:12px;margin-bottom:20px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);font-style:italic}
+#evo-close{padding:13px 32px;border-radius:13px;font-size:14px;font-weight:800;letter-spacing:.1em;cursor:pointer;border:2px solid;transition:all .2s;width:100%;text-transform:uppercase}
+#evo-close:hover{opacity:.8;transform:scale(.98)}
+#evo-week-badge{display:inline-flex;align-items:center;gap:6px;padding:4px 14px;border-radius:20px;font-size:10px;font-weight:700;margin-bottom:16px;border:1px solid}
+.particle{position:fixed;pointer-events:none;border-radius:50%;z-index:10000;animation:particleFly 1.2s ease-out forwards}
+
+/* LAYOUT */
+#app{position:relative;z-index:1;max-width:480px;margin:0 auto;min-height:100vh}
+.screen{display:none}
+.screen.active{display:block}
+
+/* HEADER */
+#main-header{position:sticky;top:0;z-index:50;background:rgba(8,11,15,.94);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);padding:10px 16px;display:flex;align-items:center;justify-content:space-between}
+.header-logo{display:flex;align-items:center;gap:8px;font-family:'Bebas Neue';font-size:18px;letter-spacing:.12em}
+.header-dot{width:8px;height:8px;border-radius:50%;background:var(--green);animation:pulse 2s infinite}
+.header-user{font-size:10px;color:var(--textDim);font-family:'JetBrains Mono'}
+
+/* SUB HEADER TRACKER */
+#tracker-subheader{background:rgba(8,11,15,.95);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:8px 14px;position:sticky;top:56px;z-index:40}
+
+/* BOTTOM NAV */
+#bottom-nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;background:rgba(8,11,15,.97);backdrop-filter:blur(20px);border-top:1px solid var(--border);display:flex;z-index:100}
+.nav-btn{flex:1;padding:10px 0 12px;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;background:none;border:none}
+.nav-btn .nav-icon{font-size:18px;transition:filter .2s}
+.nav-btn.active .nav-icon{filter:drop-shadow(0 0 6px var(--green))}
+.nav-btn .nav-label{font-size:7px;font-weight:700;letter-spacing:.08em;color:var(--textDim);transition:color .2s}
+.nav-btn.active .nav-label{color:var(--green)}
+.nav-indicator{width:20px;height:2px;border-radius:1px;background:var(--green);margin-top:1px;opacity:0;transition:opacity .2s}
+.nav-btn.active .nav-indicator{opacity:1}
+
+/* CONTENT AREA */
+.tab-content{display:none;padding:14px 14px 80px;flex-direction:column;gap:12px}
+.tab-content.active{display:flex}
+#tab-coach.tab-content.active{padding-bottom:0}
+
+/* CARDS */
+.card{background:var(--card);border-radius:16px;border:1px solid var(--border);padding:16px}
+.card-sm{background:var(--card);border-radius:14px;border:1px solid var(--border);padding:12px 14px}
+.surface{background:var(--surface);border-radius:12px;padding:12px}
+
+/* TYPOGRAPHY */
+.bebas{font-family:'Bebas Neue';letter-spacing:.1em}
+.mono{font-family:'JetBrains Mono'}
+.label{font-size:9px;font-weight:700;letter-spacing:.2em;color:var(--textDim);text-transform:uppercase}
+.phase-badge{padding:3px 10px;border-radius:20px;font-size:9px;font-weight:800;letter-spacing:.15em}
+
+/* PROGRESS BAR */
+.progress-bar{height:3px;background:rgba(255,255,255,.05);border-radius:2px;overflow:hidden}
+.progress-fill{height:100%;border-radius:2px;transition:width .6s ease}
+
+/* BUTTONS */
+.btn-primary{padding:14px;border-radius:13px;font-size:13px;font-weight:800;letter-spacing:.08em;background:rgba(0,255,120,.12);color:var(--green);border:1px solid rgba(0,255,120,.4);transition:all .2s;text-transform:uppercase;width:100%}
+.btn-primary:disabled{opacity:.4;cursor:not-allowed}
+.btn-secondary{padding:12px;border-radius:13px;font-size:12px;font-weight:700;color:var(--textDim);border:1px solid var(--border);background:transparent;width:100%}
+
+/* WEEK DOTS */
+.week-dots{display:flex;gap:4px;flex-wrap:wrap;justify-content:center;padding:2px 0}
+.week-dot{width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:10px;font-weight:800;transition:all .15s;display:flex;align-items:center;justify-content:center}
+
+/* INJ CARD */
+.inj-card{background:var(--card);border-radius:16px;border:1px solid var(--border);overflow:hidden;margin-bottom:0}
+.inj-header{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+.inj-title{display:flex;align-items:center;gap:8px;font-family:'Bebas Neue';font-size:15px;letter-spacing:.15em}
+.inj-sub{font-size:10px;color:var(--textDim);margin-top:2px;font-family:'JetBrains Mono'}
+.inj-badge{padding:4px 10px;border-radius:20px;font-size:10px;font-weight:700;letter-spacing:.08em}
+.inj-doses{display:flex}
+.dose-btn{flex:1;padding:14px 10px;border:none;border-right:1px solid var(--border);background:var(--card);text-align:left;cursor:pointer;transition:background .15s}
+.dose-btn:last-child{border-right:none}
+.dose-btn.done{background:rgba(0,255,120,.06)}
+.dose-day{font-size:9px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;margin-bottom:4px;color:var(--textDim)}
+.dose-btn.done .dose-day{color:var(--green)}
+.dose-mg{font-family:'Bebas Neue';font-size:26px;letter-spacing:.05em;line-height:1}
+.dose-check{width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:var(--green);background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);margin-top:8px;transition:all .2s}
+.dose-btn.done .dose-check{background:rgba(0,255,120,.2);border-color:var(--green)}
+.inj-offline{padding:16px;display:flex;align-items:center;gap:12px;background:rgba(255,255,255,.01)}
+
+/* RATING BARS */
+.rating-bar{display:flex;gap:4px}
+.rating-btn{flex:1;height:26px;border-radius:6px;font-size:10px;font-weight:800;border:none;cursor:pointer;transition:all .12s;background:rgba(255,255,255,.05);color:var(--textDim)}
+
+/* SETUP */
+.setup-step{display:none;flex-direction:column;gap:12px}
+.setup-step.active{display:flex}
+.setup-input-card{background:var(--card);border-radius:12px;border:1px solid var(--border);padding:12px 14px}
+.setup-input{font-size:16px;font-weight:600;color:var(--text);width:100%;background:transparent;border:none;outline:none}
+.day-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}
+.day-btn{padding:10px 0;border-radius:10px;font-size:9px;font-weight:800;letter-spacing:.05em;background:var(--surface);color:var(--textDim);border:1px solid transparent;transition:all .15s}
+.day-btn.active{background:rgba(0,255,120,.12);color:var(--green);border-color:rgba(0,255,120,.4)}
+.peptide-grid{display:flex;flex-wrap:wrap;gap:6px}
+.peptide-chip{padding:6px 11px;border-radius:20px;font-size:10px;font-weight:700;background:var(--surface);color:var(--textDim);border:1px solid var(--border);transition:all .15s;cursor:pointer}
+.peptide-chip.active{background:rgba(0,255,120,.15);color:var(--green);border-color:rgba(0,255,120,.4)}
+.step-dots{display:flex;justify-content:center;gap:8px;margin-bottom:24px}
+.step-dot{height:5px;border-radius:3px;background:var(--muted);transition:all .3s}
+
+/* STACK MODULE */
+.peptide-row{background:var(--card);border-radius:13px;border:1px solid var(--border);overflow:hidden;margin-bottom:6px}
+.peptide-row.active-p{border-color:rgba(0,255,120,.3)}
+.peptide-row-header{padding:12px 14px;display:flex;align-items:center;gap:12px}
+.peptide-detail{padding:0 14px 12px;font-size:11px;color:var(--textDim);line-height:1.6;border-top:1px solid var(--border);display:none}
+.peptide-detail.open{display:block}
+.blend-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:10px}
+.blend-card{background:var(--surface);border-radius:8px;padding:8px 10px}
+.add-btn{padding:5px 12px;border-radius:20px;font-size:10px;font-weight:800;letter-spacing:.08em;transition:all .15s}
+.add-btn.added{background:rgba(0,255,120,.15);color:var(--green);border:1px solid rgba(0,255,120,.4)}
+.add-btn.not-added{background:var(--surface);color:var(--textDim);border:1px solid var(--border)}
+
+/* CALC */
+.quick-btns{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px}
+.quick-btn{padding:4px 10px;border-radius:20px;font-size:10px;font-weight:700;background:var(--surface);color:var(--textDim);border:1px solid var(--border);cursor:pointer;transition:all .15s}
+.quick-btn.active{background:rgba(0,255,120,.12);color:var(--green);border-color:rgba(0,255,120,.3)}
+.syringe-visual{height:20px;background:var(--muted);border-radius:10px;overflow:hidden;position:relative;border:1px solid var(--border)}
+.syringe-fill{position:absolute;left:0;top:0;bottom:0;background:linear-gradient(90deg,var(--green),var(--greenDim));border-radius:10px;transition:width .4s ease}
+
+/* PERSONA */
+.persona-hero{background:var(--card);border-radius:20px;padding:24px;text-align:center;position:relative;overflow:hidden}
+.persona-emoji{font-size:80px;margin-bottom:12px;display:block}
+.evo-tree{display:flex;flex-direction:column;gap:10px}
+.evo-item{display:flex;align-items:center;gap:12px}
+.evo-badge{width:44px;height:44px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;border:2px solid var(--border)}
+
+/* CALORIES */
+.meal-card{background:var(--card);border-radius:14px;border:1px solid var(--border);padding:12px 14px;margin-bottom:0}
+.macro-chip{padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700}
+
+/* COACH */
+#coach-messages{flex:1;overflow-y:auto;padding:14px 0 12px;display:flex;flex-direction:column;gap:12px;min-height:0}
+.msg{max-width:85%;padding:10px 14px;border-radius:14px;font-size:12px;line-height:1.65}
+.msg.user{align-self:flex-end;background:rgba(0,255,120,.12);color:var(--green);border:1px solid rgba(0,255,120,.3);border-bottom-right-radius:4px}
+.msg.assistant{align-self:flex-start;background:var(--card);color:var(--text);border:1px solid var(--border);border-bottom-left-radius:4px}
+.quick-chips{display:flex;gap:6px;overflow-x:auto;padding:8px 0;flex-shrink:0}
+.quick-chip{flex-shrink:0;padding:6px 12px;border-radius:20px;background:var(--surface);color:var(--textDim);border:1px solid var(--border);font-size:10px;font-weight:600;cursor:pointer;white-space:nowrap}
+.coach-input-row{display:flex;gap:10px;align-items:flex-end;flex-shrink:0;padding-bottom:80px}
+.coach-textarea-wrap{flex:1;background:var(--card);border:1px solid var(--border);border-radius:14px;padding:10px 14px}
+.coach-send{width:44px;height:44px;border-radius:13px;font-size:18px;flex-shrink:0;background:rgba(0,255,120,.15);color:var(--green);border:1px solid rgba(0,255,120,.4)}
+.coach-send:disabled{background:transparent;color:var(--textDim);border-color:var(--border)}
+
+/* WEIGHT CURVE SVG */
+#curve-svg{width:100%;overflow:visible;display:block}
+
+/* GLOBAL VIEW */
+.global-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:8px}
+.global-card{padding:12px 10px;border-radius:14px;cursor:pointer;text-align:left;background:var(--card);border:1px solid var(--border);transition:all .15s}
+
+/* TABLES */
+.target-table{width:100%;border-collapse:collapse}
+.target-table th{padding:8px 12px;font-size:8px;font-weight:700;color:var(--textDim);letter-spacing:.15em;text-align:left;border-bottom:1px solid var(--border);white-space:nowrap}
+.target-table td{padding:8px 12px;border-bottom:1px solid var(--border)}
+.target-table tr{cursor:pointer}
+.target-table tr:hover{background:rgba(255,255,255,.02)}
+
+/* LOADING */
+#loading-screen{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:999}
+
+/* RESPONSIVE */
+@media(max-width:360px){.dose-mg{font-size:20px}.persona-emoji{font-size:60px}}
+</style>
+</head>
+<body>
+
+<!-- LOADING -->
+<div id="loading-screen">
+  <div class="bebas pulse" style="font-size:14px;color:var(--textDim);letter-spacing:.3em">CHARGEMENT...</div>
+</div>
+
+<div id="app">
+
+  <!-- SETUP SCREEN -->
+  <div id="setup-screen" class="screen" style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;position:relative;overflow:hidden">
+    <div style="position:fixed;top:0;left:0;right:0;height:2px;background:linear-gradient(transparent,rgba(0,255,120,.06),transparent);animation:scanline 8s linear infinite;pointer-events:none;z-index:0"></div>
+    <div style="width:100%;max-width:420px;position:relative;z-index:1">
+      <div class="fu" style="text-align:center;margin-bottom:28px">
+        <div style="width:60px;height:60px;border-radius:18px;background:linear-gradient(135deg,#0d2b14,#0a1f0a);border:1px solid rgba(0,255,120,.4);margin:0 auto 14px;display:flex;align-items:center;justify-content:center;font-size:28px">🥊</div>
+        <div class="bebas" style="font-size:30px;color:var(--text);letter-spacing:.12em">PEPTIDE OS</div>
+        <div style="font-size:10px;color:var(--textDim);letter-spacing:.2em;margin-top:4px">IA · TRACKER · NUTRITION · ÉVOLUTION</div>
+        <div class="step-dots" style="margin-top:14px" id="step-dots">
+          <div class="step-dot" style="width:24px"></div>
+          <div class="step-dot" style="width:8px"></div>
+          <div class="step-dot" style="width:8px"></div>
+          <div class="step-dot" style="width:8px"></div>
+        </div>
+      </div>
+
+      <!-- Step 0: Profil -->
+      <div class="setup-step active" id="step-0">
+        <div class="bebas fu" style="font-size:22px;color:var(--text)">TON PROFIL</div>
+        <div class="setup-input-card">
+          <div class="label" style="margin-bottom:6px">Prénom</div>
+          <input id="inp-name" class="setup-input" placeholder="Ex: Amor" type="text"/>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div class="setup-input-card">
+            <div class="label" style="margin-bottom:6px">Poids actuel (kg)</div>
+            <input id="inp-weight" class="setup-input" placeholder="90" type="number"/>
+          </div>
+          <div class="setup-input-card">
+            <div class="label" style="margin-bottom:6px">Objectif (kg)</div>
+            <input id="inp-goal" class="setup-input" placeholder="81" type="number"/>
+          </div>
+        </div>
+        <div class="setup-input-card">
+          <div class="label" style="margin-bottom:6px">Sport pratiqué</div>
+          <input id="inp-sport" class="setup-input" placeholder="Boxe, musculation..."/>
+        </div>
+        <button class="btn-primary" onclick="goStep(1)">SUIVANT →</button>
+      </div>
+
+      <!-- Step 1: Calories + Peptides -->
+      <div class="setup-step" id="step-1">
+        <div class="bebas fu" style="font-size:22px;color:var(--text)">CALORIES & PEPTIDES</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div class="setup-input-card">
+            <div class="label" style="margin-bottom:6px">TMB (kcal/j)</div>
+            <input id="inp-tmb" class="setup-input" placeholder="1938" type="number"/>
+          </div>
+          <div class="setup-input-card">
+            <div class="label" style="margin-bottom:6px">Objectif kcal/j</div>
+            <input id="inp-kcal" class="setup-input" placeholder="2000" type="number"/>
+          </div>
+        </div>
+        <div class="setup-input-card">
+          <div class="label" style="margin-bottom:10px">TES PEPTIDES</div>
+          <div class="peptide-grid" id="setup-peptide-chips"></div>
+        </div>
+        <div style="display:flex;gap:10px">
+          <button class="btn-secondary" onclick="goStep(0)">← RETOUR</button>
+          <button class="btn-primary" onclick="goStep(2)" style="width:auto;flex:2">SUIVANT →</button>
+        </div>
+      </div>
+
+      <!-- Step 2: Jour -->
+      <div class="setup-step" id="step-2">
+        <div class="bebas fu" style="font-size:22px;color:var(--text)">JOUR DE DÉMARRAGE</div>
+        <div class="card">
+          <div class="day-grid" id="setup-day-grid"></div>
+          <div id="schedule-preview" style="padding:12px;background:var(--bg);border-radius:10px;border:1px solid var(--border);display:flex;flex-direction:column;gap:8px;margin-top:14px"></div>
+        </div>
+        <div style="display:flex;gap:10px">
+          <button class="btn-secondary" onclick="goStep(1)">← RETOUR</button>
+          <button class="btn-primary" onclick="generateProtocol()" style="width:auto;flex:2">GÉNÉRER PROTOCOLE IA →</button>
+        </div>
+      </div>
+
+      <!-- Step 3: Protocole IA -->
+      <div class="setup-step" id="step-3">
+        <div class="bebas fu" style="font-size:22px;color:var(--text)">PROTOCOLE PERSONNALISÉ</div>
+        <div class="card" style="min-height:200px">
+          <div id="protocol-loading" style="display:flex;align-items:center;gap:10px;color:var(--textDim)">
+            <div class="spin-a" style="width:16px;height:16px;border:2px solid var(--green);border-top-color:transparent;border-radius:50%"></div>
+            <span style="font-size:12px;letter-spacing:.1em">L'IA analyse ton profil...</span>
+          </div>
+          <div id="protocol-text" style="font-size:12px;color:var(--text);line-height:1.8;white-space:pre-wrap;display:none"></div>
+        </div>
+        <button class="btn-primary" id="enter-app-btn" onclick="enterApp()" style="display:none">ENTRER DANS L'APP →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN APP -->
+  <div id="main-screen" class="screen">
+
+    <!-- HEADER -->
+    <header id="main-header">
+      <div class="header-logo">
+        <div class="header-dot pulse"></div>
+        PEPTIDE OS
+        <span id="header-persona-emoji" style="font-size:14px"></span>
+      </div>
+      <div class="header-user" id="header-user-info">USER · 90kg</div>
+    </header>
+
+    <!-- TAB: TRACKER -->
+    <div id="tab-tracker" class="tab-content active">
+      <!-- Subheader -->
+      <div id="tracker-subheader" style="margin:-14px -14px 0;padding:8px 14px">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap">
+          <div id="tracker-lost-badge" style="display:none;padding:4px 12px;border-radius:20px;background:rgba(0,255,120,.08);border:1px solid rgba(0,255,120,.3);font-size:12px;font-weight:800;color:var(--green)"></div>
+          <div style="display:flex;background:var(--surface);border-radius:10px;padding:2px;border:1px solid var(--border)">
+            <button onclick="setTrackerView('week')" id="tv-week" class="nav-btn active" style="padding:5px 10px;border-radius:8px;font-size:9px;font-weight:700;letter-spacing:.1em;flex:unset;flex-direction:unset">SEMAINE</button>
+            <button onclick="setTrackerView('curve')" id="tv-curve" class="nav-btn" style="padding:5px 10px;border-radius:8px;font-size:9px;font-weight:700;letter-spacing:.1em;flex:unset;flex-direction:unset">COURBE</button>
+            <button onclick="setTrackerView('global')" id="tv-global" class="nav-btn" style="padding:5px 10px;border-radius:8px;font-size:9px;font-weight:700;letter-spacing:.1em;flex:unset;flex-direction:unset">GLOBAL</button>
+          </div>
+        </div>
+        <div class="progress-bar" style="margin-top:8px">
+          <div id="goal-progress-fill" class="progress-fill" style="background:linear-gradient(90deg,#818cf8,var(--green));width:0%"></div>
+        </div>
+        <div style="display:flex;justify-content:space-between;margin-top:3px">
+          <span style="font-size:8px;color:var(--muted)">89kg</span>
+          <span style="font-size:8px;color:var(--muted)">87kg</span>
+          <span style="font-size:8px;color:var(--muted)">85kg</span>
+          <span style="font-size:8px;color:var(--muted)">83kg</span>
+          <span style="font-size:8px;color:var(--muted)">81kg 🎯</span>
+        </div>
+      </div>
+
+      <!-- WEEK VIEW -->
+      <div id="tracker-week-view">
+        <div class="week-dots fu" id="week-dots-container"></div>
+
+        <div id="deadline-banner" style="display:none;padding:10px 14px;border-radius:12px;background:rgba(0,255,120,.06);border:1px solid rgba(0,255,120,.3);align-items:center;gap:10px">
+          <span style="font-size:18px">🎯</span>
+          <div>
+            <div style="font-size:12px;font-weight:800;color:var(--green);letter-spacing:.05em">ZONE OBJECTIF SEPTEMBRE</div>
+            <div style="font-size:10px;color:var(--textDim)" id="deadline-sub"></div>
+          </div>
+        </div>
+
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap" class="fu1">
+          <span id="phase-badge" class="phase-badge"></span>
+          <span class="bebas" id="week-title" style="font-size:30px"></span>
+          <span class="mono" id="week-dates" style="font-size:9px;color:var(--textDim)"></span>
+          <span id="week-count" style="margin-left:auto;font-size:10px;color:var(--textDim)"></span>
+        </div>
+
+        <div style="display:flex;align-items:center;gap:8px" class="fu1">
+          <div class="progress-bar" style="flex:1">
+            <div id="inj-progress-fill" class="progress-fill" style="width:0%"></div>
+          </div>
+          <span id="inj-count" class="mono" style="font-size:9px;color:var(--textDim);white-space:nowrap"></span>
+        </div>
+
+        <div id="week-tip" class="fu2" style="display:flex;gap:10px;padding:12px 14px;border-radius:12px"></div>
+
+        <!-- Weight target vs actual -->
+        <div class="fu2" style="display:flex;gap:10px">
+          <div class="card" style="flex:1;padding:14px 16px">
+            <div class="label" style="margin-bottom:6px">CIBLE SEMAINE</div>
+            <div class="bebas" id="target-weight-display" style="font-size:30px;color:var(--textDim)"></div>
+            <div class="mono" id="inj-site-display" style="font-size:9px;color:var(--muted);margin-top:4px"></div>
+          </div>
+          <div class="card" id="actual-weight-card" style="flex:1;padding:14px 16px">
+            <div class="label" style="margin-bottom:6px">MON POIDS</div>
+            <div style="display:flex;align-items:flex-end;gap:6px">
+              <input id="weight-input" class="bebas" type="number" placeholder="—" style="font-size:30px;color:var(--text);letter-spacing:.05em" oninput="onWeightInput()"/>
+              <span style="font-size:14px;color:var(--textDim);padding-bottom:4px">KG</span>
+            </div>
+            <div id="weight-feedback" style="font-size:10px;font-weight:700;margin-top:4px;font-family:'JetBrains Mono'"></div>
+          </div>
+        </div>
+
+        <!-- Injection cards -->
+        <div class="fu3" id="reta-card-wrap"></div>
+        <div class="fu3" id="mots-card-wrap"></div>
+
+        <!-- Metrics -->
+        <div class="card fu4">
+          <div class="bebas" style="font-size:13px;color:var(--textDim);letter-spacing:.2em;margin-bottom:14px">MESURES & RESSENTI</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+            <div class="surface">
+              <div class="label" style="margin-bottom:8px">TOUR DE TAILLE</div>
+              <div style="display:flex;align-items:center;gap:6px">
+                <input id="waist-input" type="number" placeholder="—" style="font-size:22px;font-family:'Bebas Neue';color:var(--text);letter-spacing:.05em;flex:1" oninput="onWaistInput()"/>
+                <span style="font-size:11px;color:var(--textDim)">cm</span>
+              </div>
+            </div>
+            <div class="surface">
+              <div class="label" style="margin-bottom:10px">ÉNERGIE BOXE</div>
+              <div class="rating-bar" id="energy-bar"></div>
+            </div>
+          </div>
+          <div class="surface" style="margin-bottom:10px">
+            <div class="label" style="margin-bottom:10px">NAUSÉES</div>
+            <div class="rating-bar" id="nausea-bar"></div>
+          </div>
+          <div class="surface">
+            <div class="label" style="margin-bottom:8px">NOTES</div>
+            <textarea id="notes-input" placeholder="Effets, récupération, observations..." rows="3" style="width:100%;font-size:12px;color:var(--text);resize:none;line-height:1.5;font-family:'Outfit'" oninput="onNotesInput()"></textarea>
+          </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="fu5" style="display:flex;gap:10px">
+          <button onclick="prevWeek()" class="btn-secondary" id="prev-week-btn" style="flex:1">← PRÉC.</button>
+          <button onclick="validateWeek()" id="validate-btn" style="flex:2;padding:14px;border-radius:14px;font-size:13px;font-weight:800;letter-spacing:.1em"></button>
+        </div>
+      </div>
+
+      <!-- CURVE VIEW -->
+      <div id="tracker-curve-view" style="display:none;flex-direction:column;gap:12px">
+        <div class="card">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+            <div class="bebas" style="font-size:14px;color:var(--textDim);letter-spacing:.2em">COURBE DE POIDS</div>
+            <div style="display:flex;gap:12px">
+              <div style="display:flex;align-items:center;gap:4px"><div style="width:16px;height:1px;background:rgba(255,255,255,.15)"></div><span style="font-size:8px;color:var(--textDim)">CIBLE</span></div>
+              <div style="display:flex;align-items:center;gap:4px"><div style="width:16px;height:2px;background:var(--green);border-radius:1px"></div><span style="font-size:8px;color:var(--textDim)">RÉEL</span></div>
+            </div>
+          </div>
+          <svg id="curve-svg" viewBox="0 0 340 160"></svg>
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:12px" id="curve-stats"></div>
+        </div>
+        <div class="card" style="padding:0;overflow:hidden">
+          <div style="padding:12px 16px;border-bottom:1px solid var(--border)" class="bebas" style="font-size:13px;color:var(--textDim);letter-spacing:.2em">TABLEAU DES CIBLES</div>
+          <div style="overflow-x:auto"><table class="target-table" id="target-table"><thead><tr><th>SEM</th><th>DATES</th><th>PHASE</th><th>CIBLE</th><th>RÉEL</th><th>ÉCART</th></tr></thead><tbody id="target-tbody"></tbody></table></div>
+        </div>
+      </div>
+
+      <!-- GLOBAL VIEW -->
+      <div id="tracker-global-view" style="display:none">
+        <div class="bebas fu" style="font-size:22px;letter-spacing:.12em;margin-bottom:14px">VUE GLOBALE · 13 SEMAINES</div>
+        <div class="global-grid" id="global-grid"></div>
+      </div>
+    </div>
+
+    <!-- TAB: CALORIES -->
+    <div id="tab-calories" class="tab-content">
+      <div class="card fu">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+          <div>
+            <div class="bebas" style="font-size:13px;color:var(--textDim);letter-spacing:.2em">AUJOURD'HUI</div>
+            <div style="display:flex;align-items:baseline;gap:6px;margin-top:2px">
+              <span class="bebas" id="total-kcal-display" style="font-size:36px;letter-spacing:.05em;color:var(--green)">0</span>
+              <span style="font-size:13px;color:var(--textDim)">/ <span id="target-kcal-display">2000</span> kcal</span>
+            </div>
+          </div>
+          <div style="text-align:right">
+            <div style="font-size:10px;color:var(--textDim);letter-spacing:.1em">RESTANT</div>
+            <div class="bebas" id="remaining-kcal" style="font-size:24px;color:var(--green)">+2000</div>
+          </div>
+        </div>
+        <div class="progress-bar" style="height:6px;margin-bottom:10px"><div id="kcal-progress" class="progress-fill" style="background:var(--green);width:0%"></div></div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px" id="macro-display">
+          <div class="surface" style="text-align:center"><div class="label" style="margin-bottom:4px">PROTÉINES</div><div class="bebas" id="prot-total" style="font-size:20px;color:var(--blue)">0<span style="font-size:10px">g</span></div></div>
+          <div class="surface" style="text-align:center"><div class="label" style="margin-bottom:4px">GLUCIDES</div><div class="bebas" id="carb-total" style="font-size:20px;color:var(--yellow)">0<span style="font-size:10px">g</span></div></div>
+          <div class="surface" style="text-align:center"><div class="label" style="margin-bottom:4px">LIPIDES</div><div class="bebas" id="fat-total" style="font-size:20px;color:var(--orange)">0<span style="font-size:10px">g</span></div></div>
+        </div>
+      </div>
+      <div class="card-sm fu1" style="display:flex;gap:10px;align-items:flex-start">
+        <textarea id="meal-input" placeholder="Décris ton repas...\nEx: 200g poulet grillé, 150g riz basmati" rows="3" style="flex:1;font-size:12px;color:var(--text);resize:none;line-height:1.6;font-family:'Outfit'"></textarea>
+        <button onclick="addMeal()" id="meal-send-btn" style="width:40px;height:40px;border-radius:12px;flex-shrink:0;margin-top:4px;background:rgba(0,255,120,.15);color:var(--green);border:1px solid rgba(0,255,120,.4);font-size:18px">↑</button>
+      </div>
+      <div id="meal-stream" style="display:none;background:var(--surface);border-radius:12px;border:1px solid var(--border);padding:12px;font-size:11px;color:var(--textDim);font-family:'JetBrains Mono'"></div>
+      <div id="meals-list" style="display:flex;flex-direction:column;gap:8px"></div>
+      <div id="meals-empty" style="text-align:center;padding:40px 20px;color:var(--textDim);font-size:12px"><div style="font-size:32px;margin-bottom:10px">🍽️</div>Décris ce que tu manges — l'IA calcule les calories.</div>
+    </div>
+
+    <!-- TAB: COACH -->
+    <div id="tab-coach" class="tab-content" style="height:calc(100vh - 56px);flex-direction:column;padding:0 14px">
+      <div id="coach-messages"></div>
+      <div class="quick-chips" id="quick-chips"></div>
+      <div class="coach-input-row">
+        <div class="coach-textarea-wrap">
+          <textarea id="coach-input" placeholder="Pose ta question au coach..." rows="2" style="width:100%;font-size:12px;color:var(--text);resize:none;line-height:1.5;font-family:'Outfit'" onkeydown="coachKeyDown(event)"></textarea>
+        </div>
+        <button onclick="sendCoach()" id="coach-send-btn" class="coach-send">↑</button>
+      </div>
+    </div>
+
+    <!-- TAB: STACK -->
+    <div id="tab-stack" class="tab-content">
+      <div class="card fu" id="active-stack-display">
+        <div class="bebas" style="font-size:13px;color:var(--textDim);letter-spacing:.2em;margin-bottom:12px">STACK ACTIF</div>
+        <div id="active-peptides-list" style="display:flex;flex-wrap:wrap;gap:8px"></div>
+      </div>
+      <div id="synergy-block" style="display:none" class="fu1"></div>
+      <button onclick="analyzeStack()" id="analyze-btn" class="fu1" style="padding:12px;border-radius:13px;background:rgba(181,139,250,.1);color:var(--purple);border:1px solid rgba(181,139,250,.3);font-size:12px;font-weight:700;letter-spacing:.08em">🧠 Analyse IA du stack</button>
+      <div id="stack-analysis" style="display:none;background:var(--card);border-radius:14px;border:1px solid rgba(181,139,250,.2);padding:14px;font-size:12px;color:var(--text);line-height:1.7"></div>
+      <div id="peptide-library"></div>
+    </div>
+
+    <!-- TAB: CALC -->
+    <div id="tab-calc" class="tab-content">
+      <div class="card fu">
+        <div class="label" style="margin-bottom:10px">PEPTIDE</div>
+        <div class="peptide-grid" id="calc-peptide-chips"></div>
+        <div id="calc-peptide-info" style="display:none;margin-top:10px;font-size:11px;color:var(--textDim);background:var(--surface);border-radius:10px;padding:8px 12px"></div>
+      </div>
+      <div class="card fu1">
+        <div class="label" style="margin-bottom:10px">SERINGUE</div>
+        <div style="display:flex;gap:8px">
+          <button onclick="setSyringe(30)" id="syr-30" class="add-btn not-added" style="flex:1;padding:10px 6px;border-radius:12px;font-size:9px;text-align:center">0.3ml (30u)</button>
+          <button onclick="setSyringe(50)" id="syr-50" class="add-btn not-added" style="flex:1;padding:10px 6px;border-radius:12px;font-size:9px;text-align:center">0.5ml (50u)</button>
+          <button onclick="setSyringe(100)" id="syr-100" class="add-btn added" style="flex:1;padding:10px 6px;border-radius:12px;font-size:9px;text-align:center">1ml (100u)</button>
+        </div>
+      </div>
+      <div class="card fu1" style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+        <div>
+          <div class="label" style="margin-bottom:8px">VIAL (mg)</div>
+          <div class="quick-btns" id="vial-quick"></div>
+          <div class="surface" style="display:flex;align-items:center;gap:6px">
+            <input id="calc-vial" type="number" placeholder="ex: 5" style="flex:1;font-size:16px;font-weight:700;color:var(--text)" oninput="calcDilution()"/>
+            <span style="font-size:11px;color:var(--textDim)">mg</span>
+          </div>
+        </div>
+        <div>
+          <div class="label" style="margin-bottom:8px">EAU BAC (ml)</div>
+          <div class="quick-btns" id="water-quick"></div>
+          <div class="surface" style="display:flex;align-items:center;gap:6px">
+            <input id="calc-water" type="number" placeholder="ex: 2" style="flex:1;font-size:16px;font-weight:700;color:var(--text)" oninput="calcDilution()"/>
+            <span style="font-size:11px;color:var(--textDim)">ml</span>
+          </div>
+        </div>
+      </div>
+      <div id="concentration-display" style="display:none;background:var(--surface);border-radius:12px;border:1px solid rgba(0,255,120,.1);padding:10px 14px;display:none;justify-content:space-between;align-items:center">
+        <span style="font-size:11px;color:var(--textDim)">Concentration</span>
+        <span id="concentration-val" class="mono" style="font-size:12px;font-weight:700;color:var(--green)"></span>
+      </div>
+      <div class="card fu2">
+        <div class="label" style="margin-bottom:8px">DOSE SOUHAITÉE (mcg)</div>
+        <div class="quick-btns" id="dose-quick"></div>
+        <div class="surface" style="display:flex;align-items:center;gap:6px">
+          <input id="calc-dose" type="number" placeholder="ex: 250" style="flex:1;font-size:20px;font-weight:700;color:var(--text)" oninput="calcDilution()"/>
+          <span style="font-size:12px;color:var(--textDim)">mcg</span>
+        </div>
+      </div>
+      <div id="calc-result" style="display:none"></div>
+    </div>
+
+    <!-- TAB: PERSONA -->
+    <div id="tab-persona" class="tab-content">
+      <div id="persona-hero" class="persona-hero fu">
+        <div id="persona-glow" style="position:absolute;inset:0;pointer-events:none"></div>
+        <div id="persona-emoji" class="persona-emoji float-a"></div>
+        <div id="persona-name" class="bebas" style="font-size:36px;letter-spacing:.1em"></div>
+        <div id="persona-desc" style="font-size:12px;color:var(--textDim);margin-top:8px;line-height:1.6;font-style:italic"></div>
+        <div id="persona-weeks-badge" style="margin-top:14px;display:inline-flex;align-items:center;gap:8px;padding:6px 16px;border-radius:20px;border:1px solid"></div>
+      </div>
+      <div id="next-persona-card" class="card fu1" style="display:none">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+          <div><div class="label" style="margin-bottom:4px">PROCHAIN STADE</div><div id="next-persona-label" style="font-size:18px;margin-top:4px"></div></div>
+          <div style="text-align:right"><div style="font-size:10px;color:var(--textDim)">dans</div><div id="next-persona-weeks" class="bebas" style="font-size:24px;color:var(--green)"></div></div>
+        </div>
+        <div class="progress-bar" style="height:8px"><div id="persona-progress-fill" class="progress-fill"></div></div>
+        <div style="display:flex;justify-content:space-between;margin-top:6px">
+          <span id="persona-from-label" style="font-size:10px"></span>
+          <span id="persona-pct-label" style="font-size:10px;color:var(--textDim)"></span>
+          <span id="persona-to-label" style="font-size:10px"></span>
+        </div>
+      </div>
+      <div class="card fu2">
+        <div class="bebas" style="font-size:13px;color:var(--textDim);letter-spacing:.2em;margin-bottom:14px">ARBRE D'ÉVOLUTION</div>
+        <div class="evo-tree" id="evo-tree"></div>
+      </div>
+    </div>
+
+    <!-- BOTTOM NAV -->
+    <nav id="bottom-nav">
+      <button class="nav-btn active" onclick="switchTab('tracker')" id="nav-tracker">
+        <span class="nav-icon">📅</span>
+        <span class="nav-label">TRACKER</span>
+        <div class="nav-indicator"></div>
+      </button>
+      <button class="nav-btn" onclick="switchTab('calories')" id="nav-calories">
+        <span class="nav-icon">🍽️</span>
+        <span class="nav-label">CALORIES</span>
+        <div class="nav-indicator"></div>
+      </button>
+      <button class="nav-btn" onclick="switchTab('coach')" id="nav-coach">
+        <span class="nav-icon">🧠</span>
+        <span class="nav-label">COACH IA</span>
+        <div class="nav-indicator"></div>
+      </button>
+      <button class="nav-btn" onclick="switchTab('stack')" id="nav-stack">
+        <span class="nav-icon">💊</span>
+        <span class="nav-label">STACK</span>
+        <div class="nav-indicator"></div>
+      </button>
+      <button class="nav-btn" onclick="switchTab('calc')" id="nav-calc">
+        <span class="nav-icon">⚗️</span>
+        <span class="nav-label">CALC</span>
+        <div class="nav-indicator"></div>
+      </button>
+      <button class="nav-btn" onclick="switchTab('persona')" id="nav-persona">
+        <span class="nav-icon">🐉</span>
+        <span class="nav-label">ÉVOL.</span>
+        <div class="nav-indicator"></div>
+      </button>
+    </nav>
+  </div>
+</div>
+
+<script>
+/* ═══════════════════════════════════════════
+   DATA
+═══════════════════════════════════════════ */
+const C={bg:"#080b0f",surface:"#0d1117",card:"#111820",border:"#1a2520",green:"#00ff78",greenDim:"#00c45e",orange:"#ff6b2b",purple:"#a78bfa",yellow:"#fbbf24",red:"#f87171",blue:"#5bb8ff",text:"#e2f0e8",textDim:"#4a6a4a",muted:"#3a4a3a"};
+const PHASES={RELANCE:{color:"#818cf8",bg:"rgba(129,140,248,0.08)",border:"rgba(129,140,248,0.2)"},"PHASE 2":{color:C.green,bg:"rgba(0,255,120,0.06)",border:"rgba(0,255,120,0.15)"},"PHASE 3":{color:C.yellow,bg:"rgba(251,191,36,0.07)",border:"rgba(251,191,36,0.18)"},BONUS:{color:C.purple,bg:"rgba(167,139,250,0.07)",border:"rgba(167,139,250,0.18)"}};
+const DAY_NAMES=["Lundi","Mardi","Mercredi","Jeudi","Vendredi","Samedi","Dimanche"];
+const DAY_SHORT=["LUN","MAR","MER","JEU","VEN","SAM","DIM"];
+const SITES=["Abdomen G","Abdomen D","Cuisse G","Cuisse D","Bras G","Bras D"];
+const WEIGHT_TARGETS=[89.3,88.6,87.7,86.8,85.9,85.0,84.2,83.4,82.7,82.1,81.5,81.0,80.5];
+const DEADLINE=new Date("2026-09-01");
+const START_DATE=new Date("2026-06-03");
+
+const PEPTIDE_DB={
+  "Retatrutide":{cat:"Perte de poids",effect:"Triple agoniste GLP-1/GIP/Glucagon. Coupe-faim puissant + lipolyse.",dose:"2–12mg",freq:"1–2x/semaine",unit:"mg",synergy:["MOTS-C"],emoji:"🔴"},
+  "MOTS-C":{cat:"Métabolisme",effect:"Peptide mitochondrial. Active AMPK, améliore endurance et sensibilité insuline.",dose:"10mg",freq:"3x/semaine",unit:"mg",synergy:["Retatrutide"],emoji:"🟢"},
+  "NAD+":{cat:"Énergie",effect:"Coenzyme mitochondriale. Carburant cellulaire, active SIRT1, préserve le muscle.",dose:"50mg",freq:"3x/semaine",unit:"mg",synergy:["MOTS-C"],emoji:"⚡"},
+  "BPC-157":{cat:"Régénération",effect:"Régénère tendons/ligaments, anti-inflammatoire, protège muqueuse gastrique.",dose:"250–500mcg",freq:"2x/jour",unit:"mcg",synergy:["TB-500"],emoji:"🔵"},
+  "TB-500":{cat:"Récupération",effect:"Thymosin Beta-4. Régénération musculaire systémique, réduit inflammation.",dose:"2–2.5mg",freq:"2x/semaine",unit:"mg",synergy:["BPC-157"],emoji:"🟣"},
+  "AOD-9604":{cat:"Lipolyse",effect:"Fragment GH 176-191. Lipolyse directe sans effet sur glycémie.",dose:"300–500mcg",freq:"1x/jour",unit:"mcg",synergy:["Retatrutide"],emoji:"🟠"},
+  "Epithalon":{cat:"Longévité",effect:"Régule mélatonine, améliore sommeil profond, active télomérase.",dose:"5–10mg",freq:"1x/jour 10j cycles",unit:"mg",synergy:[],emoji:"✨"},
+  "Selank":{cat:"Mental",effect:"Anxiolytique peptidique. Réduit cortisol, améliore focus et réflexes.",dose:"250–500mcg",freq:"1x/jour",unit:"mcg",synergy:["Semax"],emoji:"🧠"},
+  "Semax":{cat:"Cognitif",effect:"Booste BDNF, plasticité neuronale, temps de réaction.",dose:"200–600mcg",freq:"1x/jour nasal",unit:"mcg",synergy:["Selank"],emoji:"⚗️"},
+  "CJC-1295":{cat:"GH",effect:"Analogue GHRH. Stimule GH endogène, lipolyse nocturne.",dose:"100–200mcg",freq:"1x/jour soir",unit:"mcg",synergy:["Ipamorelin"],emoji:"🌙"},
+  "Ipamorelin":{cat:"GH",effect:"GHRP sélectif. Pic GH naturel sans cortisol ni prolactine.",dose:"100–300mcg",freq:"1x/jour soir",unit:"mcg",synergy:["CJC-1295"],emoji:"💫"},
+  "Tesamorelin":{cat:"Lipolyse",effect:"Analogue GHRH. Prouvé cliniquement sur graisse viscérale abdominale.",dose:"1–2mg",freq:"1x/jour",unit:"mg",synergy:["MOTS-C"],emoji:"🎯"},
+  "GHK-Cu":{cat:"Anti-âge",effect:"Tripeptide cuivre. Stimule collagène/élastine, régénération tissulaire. Active 31% des gènes de réparation ADN.",dose:"1–2mg",freq:"1x/jour ou 5x/semaine",unit:"mg",synergy:["BPC-157","TB-500","Epithalon"],emoji:"🟤"},
+  "KLOW":{cat:"Régénération",effect:"Blend 4-en-1 : GHK-Cu (réparation ADN/collagène) + BPC-157 (tendineux/gut) + TB-500 (musculaire systémique) + KPV (anti-inflammatoire NF-κB). Vial 80mg.",dose:"Vial 80mg reconstitué",freq:"1x/jour SC — soir",unit:"mg",synergy:["Retatrutide","MOTS-C"],blend:["GHK-Cu","BPC-157","TB-500","KPV"],blendDetails:{ghkCu:"20mg",bpc157:"20mg",tb500:"30mg",kpv:"10mg"},emoji:"🧬"}
+};
+
+const PERSONAS=[
+  {stage:0,weeks:0,name:"Larve",emoji:"🐛",desc:"Tu commences tout juste. Le corps s'éveille.",color:"#888"},
+  {stage:1,weeks:3,name:"Chrysalide",emoji:"🫧",desc:"La transformation est en cours. +3 semaines.",color:"#a78bfa"},
+  {stage:2,weeks:6,name:"Salamèche",emoji:"🦎",desc:"La flamme s'allume. Énergie en hausse, premiers kilos perdus.",color:"#ff6820"},
+  {stage:3,weeks:9,name:"Reptincel",emoji:"🔥",desc:"Tu brûles. Le métabolisme tourne à plein régime.",color:"#ff9500"},
+  {stage:4,weeks:12,name:"Dracaufeu",emoji:"🐉",desc:"ÉVOLUTION FINALE. Objectif atteint. Tu es devenu ce que tu voulais.",color:"#ff3300"},
+  {stage:5,weeks:16,name:"Dracolosse",emoji:"⚡🐉",desc:"Au-delà de l'objectif. Tu redéfinis les limites.",color:"#ffc133"}
+];
+
+/* ═══════════════════════════════════════════
+   STATE
+═══════════════════════════════════════════ */
+let APP={
+  user:null,
+  currentWeek:0,
+  weekLogs:Array.from({length:13},()=>({weight:"",waist:"",energy:0,nausea:0,notes:"",done:false,injDone:{}})),
+  meals:[],
+  selectedPeptides:[],
+  calcPeptide:"",
+  calcSyringe:100,
+  trackerView:"week",
+  setupStep:0,
+  setupDay:1,
+  setupPeptides:[]
+};
+
+function addDays(d,n){const r=new Date(d);r.setDate(r.getDate()+n);return r;}
+function fmtShort(d){return d.toLocaleDateString("fr-FR",{day:"numeric",month:"short"});}
+function daysUntil(t){return Math.max(0,Math.ceil((t-new Date())/86400000));}
+
+function buildSchedule(idx){
+  const d=o=>DAY_NAMES[(idx+o)%7];
+  return{r1:d(0),r2:d(3),m1:d(0),m2:d(2),m3:d(4)};
+}
+
+function buildWeeks(idx){
+  const s=buildSchedule(idx);
+  const ON=(d1,d2,d3)=>({status:"ON",doses:[{day:d1,mg:10},{day:d2,mg:10},{day:d3,mg:10}]});
+  const RAM=(d1,d2,mg)=>({status:"RAMPE",doses:[{day:d1,mg},{day:d2,mg}]});
+  const OFF={status:"OFF",doses:[]};
+  const def=(w,phase,retaMg,motsC,tip)=>({
+    week:w,phase,...PHASES[phase],
+    reta:{total:retaMg,doses:[{day:s.r1,mg:retaMg/2},{day:s.r2,mg:retaMg/2}]},
+    motsC,injSite:SITES[(w-1)%SITES.length],
+    targetWeight:WEIGHT_TARGETS[w-1],
+    startDate:addDays(START_DATE,(w-1)*7),
+    endDate:addDays(START_DATE,(w-1)*7+6),tip
+  });
+  return[
+    def(1,"RELANCE",3,RAM(s.m1,s.m3,5),"Reprise douce — 8j d'arrêt. Récepteurs en re-upregulation, ne force pas."),
+    def(2,"RELANCE",4,RAM(s.m1,s.m3,10),"Coupe-faim de retour. 2g/kg de protéines même sans appétit — puissance obligatoire."),
+    def(3,"PHASE 2",4,ON(s.m1,s.m2,s.m3),"Stack complet. MOTS-C + Reta en synergie — boom d'énergie attendu J+4."),
+    def(4,"PHASE 2",4,ON(s.m1,s.m2,s.m3),"Première pesée de référence. Même heure, à jeun. Cible : 86,8 kg."),
+    def(5,"PHASE 2",4,ON(s.m1,s.m2,s.m3),"5+5 semaines actives. Effets composés installés — ne touche à rien."),
+    def(6,"PHASE 2",4,ON(s.m1,s.m2,s.m3),"⚕️ Bilan sanguin : glycémie, bilan hépatique, NFS, ferritine, testo."),
+    def(7,"PHASE 2",4,ON(s.m1,s.m2,s.m3),"Sem. 5/8 du cycle MOTS-C — pic d'efficacité mitochondriale."),
+    def(8,"PHASE 2",4,ON(s.m1,s.m2,s.m3),"Dernière semaine MOTS-C avant pause. Cible : 83,4 kg."),
+    def(9,"PHASE 3",6,OFF,"Montée à 6mg reta. Surveille nausées J1-J3. Hydrate ++."),
+    def(10,"PHASE 3",6,OFF,"Plateau possible — normal, le corps s'adapte. Continue sans modifier."),
+    def(11,"PHASE 3",6,OFF,"Bilan mi-protocole. Photos, tour de taille. Objectif sept. dans 3 sem."),
+    def(12,"PHASE 3",6,OFF,"🎯 OBJECTIF ATTEINT — 81 kg. Bilan complet. Tu es dans la catégorie."),
+    def(13,"BONUS",6,OFF,"Semaine bonus. Consolide à 80,5 kg. Tu arrives à septembre au top.")
+  ];
+}
+
+let WEEKS=[];
+
+/* ═══════════════════════════════════════════
+   STORAGE
+═══════════════════════════════════════════ */
+function stSave(){try{localStorage.setItem("peptide_os_html",JSON.stringify(APP));}catch{}}
+function stLoad(){try{const s=localStorage.getItem("peptide_os_html");if(s)return JSON.parse(s);}catch{}return null;}
+
+/* ═══════════════════════════════════════════
+   CLAUDE API
+═══════════════════════════════════════════ */
+async function askClaude(system,userMsg,onChunk){
+  try{
+    const res=await fetch("/.netlify/functions/claude",{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({system,messages:[{role:"user",content:userMsg}]})
+    });
+    if(!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data=await res.json();
+    const text=data.content?.[0]?.text||"Pas de réponse.";
+    onChunk(text);
+    return text;
+  }catch(e){
+    const msg="⚠️ Coach IA indisponible. Vérifie la clé API dans Netlify → Site settings → Environment variables → ANTHROPIC_API_KEY";
+    onChunk(msg);return msg;
+  }
+}
+
+function initSetup(){
+  // Peptide chips step 1
+  const grid=document.getElementById("setup-peptide-chips");
+  grid.innerHTML="";
+  Object.keys(PEPTIDE_DB).forEach(p=>{
+    const btn=document.createElement("button");
+    btn.className="peptide-chip";
+    btn.textContent=PEPTIDE_DB[p].emoji+" "+p;
+    btn.onclick=()=>{
+      const i=APP.setupPeptides.indexOf(p);
+      if(i>-1)APP.setupPeptides.splice(i,1);
+      else APP.setupPeptides.push(p);
+      btn.classList.toggle("active",APP.setupPeptides.includes(p));
+    };
+    grid.appendChild(btn);
+  });
+  // Day grid step 2
+  initDayGrid();
+}
+
+function initDayGrid(){
+  const grid=document.getElementById("setup-day-grid");
+  grid.innerHTML="";
+  DAY_SHORT.forEach((d,i)=>{
+    const btn=document.createElement("button");
+    btn.className="day-btn"+(i===APP.setupDay?" active":"");
+    btn.textContent=d;
+    btn.onclick=()=>{
+      APP.setupDay=i;
+      document.querySelectorAll(".day-btn").forEach((b,j)=>b.classList.toggle("active",j===i));
+      updateSchedulePreview();
+    };
+    grid.appendChild(btn);
+  });
+  updateSchedulePreview();
+}
+
+function updateSchedulePreview(){
+  const s=buildSchedule(APP.setupDay);
+  const prev=document.getElementById("schedule-preview");
+  prev.innerHTML=`
+    <div style="display:flex;align-items:center;gap:8px"><span style="font-size:12px">💉</span><span style="font-size:10px;font-weight:700;color:${C.orange};min-width:60px">RETA</span><div style="display:flex;gap:4px">${[s.r1,s.r2].map(d=>`<span style="padding:2px 7px;border-radius:20px;background:${C.orange}15;color:${C.orange};font-size:9px;font-weight:700">${d.toUpperCase()}</span>`).join("")}</div></div>
+    <div style="display:flex;align-items:center;gap:8px"><span style="font-size:12px">🔬</span><span style="font-size:10px;font-weight:700;color:${C.green};min-width:60px">MOTS-C</span><div style="display:flex;gap:4px">${[s.m1,s.m2,s.m3].map(d=>`<span style="padding:2px 7px;border-radius:20px;background:${C.green}15;color:${C.green};font-size:9px;font-weight:700">${d.toUpperCase()}</span>`).join("")}<span style="font-size:9px;color:${C.textDim}">sem ON</span></div></div>
+  `;
+}
+
+function goStep(n){
+  document.getElementById("step-"+APP.setupStep).classList.remove("active");
+  APP.setupStep=n;
+  document.getElementById("step-"+n).classList.add("active");
+  const dots=document.querySelectorAll(".step-dot");
+  dots.forEach((d,i)=>{d.style.width=i===n?"24px":"8px";d.style.background=i<=n?C.green:C.muted;});
+}
+
+async function generateProtocol(){
+  goStep(3);
+  document.getElementById("protocol-loading").style.display="flex";
+  document.getElementById("protocol-text").style.display="none";
+  const list=APP.setupPeptides.map(p=>`- ${p}: ${PEPTIDE_DB[p]?.effect||""}`).join("\n");
+  const name=document.getElementById("inp-name").value||"Utilisateur";
+  const weight=document.getElementById("inp-weight").value||"?";
+  const goal=document.getElementById("inp-goal").value||"?";
+  const sport=document.getElementById("inp-sport").value||"non précisé";
+  const tmb=document.getElementById("inp-tmb").value||"?";
+  const kcal=document.getElementById("inp-kcal").value||"?";
+
+  const txt=document.getElementById("protocol-text");
+  let started=false;
+  await askClaude(
+    "Tu es coach expert peptides. Réponds toujours en français. Sois concis et percutant, max 200 mots.",
+    `Génère un protocole pour:\n- ${name}, ${weight}kg → ${goal}kg\n- Sport: ${sport}\n- TMB: ${tmb} kcal | Objectif: ${kcal} kcal/j\n- Peptides: ${APP.setupPeptides.join(", ")}\n\n${list}\n\nDonne: 1) Synergie stack 2) Planning semaine 3) 3 règles nutrition 4) Timeline`,
+    t=>{
+      if(!started){document.getElementById("protocol-loading").style.display="none";txt.style.display="block";started=true;}
+      txt.textContent=t;
+    }
+  );
+  document.getElementById("enter-app-btn").style.display="block";
+  // Store form data
+  APP.user={
+    name,weight,goalWeight:goal,sport,tmb,kcal:kcal,
+    peptides:APP.setupPeptides,dayIdx:APP.setupDay
+  };
+}
+
+function enterApp(){
+  stSave();
+  showMainApp();
+}
+
+/* ═══════════════════════════════════════════
+   MAIN APP INIT
+═══════════════════════════════════════════ */
+function showMainApp(){
+  document.getElementById("setup-screen").style.display="none";
+  document.getElementById("main-screen").classList.add("active");
+  document.getElementById("main-screen").style.display="block";
+  WEEKS=buildWeeks(APP.user.dayIdx||1);
+  APP.selectedPeptides=[...APP.user.peptides];
+  renderHeader();
+  renderTracker();
+  renderStack();
+  renderCalc();
+  renderPersona();
+  initCoach();
+  updateCaloriesDisplay();
+}
+
+function renderHeader(){
+  const p=getPersona(APP.weekLogs.filter(l=>l.done).length);
+  document.getElementById("header-persona-emoji").textContent=p.emoji;
+  document.getElementById("header-user-info").textContent=(APP.user.name||"USER")+" · "+APP.user.weight+"kg";
+}
+
+/* ═══════════════════════════════════════════
+   TRACKER
+═══════════════════════════════════════════ */
+function getPersona(w){let p=PERSONAS[0];for(const x of PERSONAS){if(w>=x.weeks)p=x;}return p;}
+
+function renderTracker(){
+  renderWeekDots();
+  renderCurrentWeek();
+  if(APP.trackerView==="curve")renderCurve();
+  if(APP.trackerView==="global")renderGlobal();
+}
+
+function renderWeekDots(){
+  const c=document.getElementById("week-dots-container");
+  c.innerHTML="";
+  WEEKS.forEach((wk,i)=>{
+    const l=APP.weekLogs[i];const isCur=i===APP.currentWeek;const ph=PHASES[wk.phase];
+    const btn=document.createElement("button");
+    btn.className="week-dot";
+    btn.textContent=l.done?"✓":wk.week;
+    btn.style.cssText=`border:2px solid ${isCur?ph.color:l.done?ph.color+"60":"rgba(255,255,255,.06)"};background:${l.done?ph.color+"20":isCur?"rgba(255,255,255,.05)":"transparent"};color:${l.done||isCur?ph.color:C.textDim};transform:${isCur?"scale(1.15)":"scale(1)"}`;
+    btn.onclick=()=>{APP.currentWeek=i;renderCurrentWeek();renderWeekDots();};
+    c.appendChild(btn);
+  });
+}
+
+function renderCurrentWeek(){
+  const i=APP.currentWeek;const w=WEEKS[i];const log=APP.weekLogs[i];const ph=PHASES[w.phase];
+  const done=APP.weekLogs.filter(l=>l.done).length;
+  const lastW=[...APP.weekLogs].reverse().find(l=>l.weight)?.weight;
+  const lost=lastW?Math.max(0,90-parseFloat(lastW)).toFixed(1):null;
+  const goalPct=lost?Math.min(100,(parseFloat(lost)/9)*100):0;
+
+  // Lost badge
+  const badge=document.getElementById("tracker-lost-badge");
+  if(lost){badge.style.display="block";badge.innerHTML=`−${lost} <span style="font-size:9px;color:${C.textDim};font-weight:400">/ 9 kg</span>`;}
+  else badge.style.display="none";
+
+  // Goal progress
+  document.getElementById("goal-progress-fill").style.width=goalPct+"%";
+
+  // Deadline banner
+  const banner=document.getElementById("deadline-banner");
+  if(w.week>=12){banner.style.display="flex";document.getElementById("deadline-sub").textContent=`Cible : ${w.targetWeight} kg · ${Math.floor(daysUntil(DEADLINE)/7)} sem. avant SEPT.`;}
+  else banner.style.display="none";
+
+  // Phase header
+  const phaseBadge=document.getElementById("phase-badge");
+  phaseBadge.textContent=w.phase;
+  phaseBadge.style.cssText=`padding:3px 10px;border-radius:20px;font-size:9px;font-weight:800;letter-spacing:.15em;background:${ph.bg};color:${ph.color};border:1px solid ${ph.border}`;
+  document.getElementById("week-title").textContent="SEMAINE "+w.week;
+  document.getElementById("week-dates").textContent=fmtShort(w.startDate).toUpperCase()+" – "+fmtShort(w.endDate).toUpperCase();
+  document.getElementById("week-count").textContent=done+"/13";
+
+  // Inj progress
+  const allInj=w.reta.doses.length+(w.motsC.status!=="OFF"?w.motsC.doses.length:0);
+  const doneInj=Object.values(log.injDone||{}).filter(Boolean).length;
+  document.getElementById("inj-progress-fill").style.cssText=`width:${allInj>0?(doneInj/allInj)*100:0}%;background:${ph.color}`;
+  document.getElementById("inj-count").textContent=`${doneInj}/${allInj} inj.`;
+
+  // Tip
+  const tip=document.getElementById("week-tip");
+  tip.style.cssText=`display:flex;gap:10px;padding:12px 14px;border-radius:12px;background:${ph.bg};border:1px solid ${ph.border}`;
+  tip.innerHTML=`<span style="font-size:14px">💡</span><p style="font-size:12px;line-height:1.65;font-weight:600;color:${ph.color}">${w.tip}</p>`;
+
+  // Weight
+  document.getElementById("target-weight-display").textContent=w.targetWeight+" KG";
+  document.getElementById("target-weight-display").style.color=C.textDim;
+  document.getElementById("inj-site-display").textContent=w.injSite;
+  const wInput=document.getElementById("weight-input");
+  wInput.value=log.weight||"";
+  wInput.style.color=log.weight&&parseFloat(log.weight)<=w.targetWeight?C.green:C.text;
+  const actCard=document.getElementById("actual-weight-card");
+  actCard.style.border=`1px solid ${log.weight&&parseFloat(log.weight)<=w.targetWeight?C.green+"40":C.border}`;
+  const fb=document.getElementById("weight-feedback");
+  if(log.weight){
+    const diff=parseFloat(log.weight)-w.targetWeight;
+    fb.textContent=diff<=0?`✓ +${Math.abs(diff).toFixed(1)} d'avance`:`⚠ +${diff.toFixed(1)} kg vs cible`;
+    fb.style.color=diff<=0?C.green:C.yellow;
+  }else fb.textContent="";
+
+  // Reta card
+  document.getElementById("reta-card-wrap").innerHTML=buildInjCard("RETATRUTIDE","💉",`${w.reta.total}mg total · 2× SC · ${w.injSite}`,`${w.reta.doses[0].mg}mg × 2`,C.orange,w.reta.doses,"reta",log.injDone||{},C.orange);
+  // MOTS-C card
+  const motsLabel=w.motsC.status==="OFF"?"Pause 4 semaines OFF":w.motsC.status==="RAMPE"?`Montée progressive · ${w.motsC.doses.reduce((a,d)=>a+d.mg,0)}mg`:"30mg total · 3× SC · matin à jeun";
+  const motsBadgeColor=w.motsC.status==="OFF"?C.textDim:w.motsC.status==="RAMPE"?C.yellow:C.green;
+  document.getElementById("mots-card-wrap").innerHTML=buildInjCard("MOTS-C","🔬",motsLabel,w.motsC.status,motsBadgeColor,w.motsC.status==="OFF"?null:w.motsC.doses,"mots",log.injDone||{},C.green,w.motsC.status==="OFF");
+
+  // Metrics
+  document.getElementById("waist-input").value=log.waist||"";
+  renderRatingBar("energy-bar",log.energy||0,C.yellow,"energy");
+  renderRatingBar("nausea-bar",log.nausea||0,C.red,"nausea");
+  document.getElementById("notes-input").value=log.notes||"";
+
+  // Validate btn
+  const vBtn=document.getElementById("validate-btn");
+  vBtn.textContent=log.done?"✓ SEMAINE VALIDÉE":"VALIDER LA SEMAINE →";
+  vBtn.style.cssText=`flex:2;padding:14px;border-radius:14px;font-size:13px;font-weight:800;letter-spacing:.1em;background:${ph.bg};color:${ph.color};border:1px solid ${ph.border};cursor:pointer`;
+  document.getElementById("prev-week-btn").disabled=i===0;
+  document.getElementById("prev-week-btn").style.opacity=i===0?".3":"1";
+}
+
+function buildInjCard(title,icon,subtitle,badge,badgeColor,doses,prefix,injDone,doseColor,offline=false){
+  if(offline){
+    return `<div class="inj-card"><div class="inj-header"><div><div class="inj-title"><span>${icon}</span>${title}</div><div class="inj-sub">${subtitle}</div></div><div class="inj-badge" style="background:${badgeColor}18;color:${badgeColor};border:1px solid ${badgeColor}30">${badge}</div></div><div class="inj-offline"><span style="font-size:22px;opacity:.3">⏸</span><div style="font-size:11px;color:${C.textDim};line-height:1.6">Pause mitochondriale 4 semaines. Le reta continue seul.</div></div></div>`;
+  }
+  const dosesHtml=doses.map((d,i)=>{
+    const key=`${prefix}_${i}`;const done=injDone[key];
+    return `<button class="dose-btn${done?" done":""}" onclick="toggleInj('${prefix}',${i})" style="border-right:${i<doses.length-1?"1px solid "+C.border:"none"}">
+      <div class="dose-day">${d.day.toUpperCase()}</div>
+      <div class="dose-mg" style="color:${done?C.green:doseColor}">${d.mg}<span style="font-size:12px">mg</span></div>
+      <div class="dose-check">${done?"✓":""}</div>
+      ${done?`<span style="font-size:9px;color:${C.green};font-weight:600;letter-spacing:.05em;margin-top:2px;display:block">INJECTÉ</span>`:""}
+    </button>`;
+  }).join("");
+  return `<div class="inj-card"><div class="inj-header"><div><div class="inj-title"><span>${icon}</span>${title}</div><div class="inj-sub">${subtitle}</div></div><div class="inj-badge" style="background:${badgeColor}18;color:${badgeColor};border:1px solid ${badgeColor}30">${badge}</div></div><div class="inj-doses">${dosesHtml}</div></div>`;
+}
+
+function renderRatingBar(id,val,color,field){
+  const bar=document.getElementById(id);
+  bar.innerHTML=[1,2,3,4,5].map(n=>`<button class="rating-btn" onclick="setRating('${field}',${n})" style="background:${val>=n?color:"rgba(255,255,255,.05)"};color:${val>=n?C.bg:C.textDim}">${n}</button>`).join("");
+}
+
+function toggleInj(prefix,idx){
+  const log=APP.weekLogs[APP.currentWeek];
+  if(!log.injDone)log.injDone={};
+  const key=`${prefix}_${idx}`;
+  log.injDone[key]=!log.injDone[key];
+  stSave();
+  renderCurrentWeek();
+  renderWeekDots();
+}
+
+function setRating(field,val){
+  const log=APP.weekLogs[APP.currentWeek];
+  log[field]=log[field]===val?0:val;
+  stSave();
+  renderRatingBar(field==="energy"?"energy-bar":"nausea-bar",log[field],field==="energy"?C.yellow:C.red,field);
+}
+
+function onWeightInput(){
+  const v=document.getElementById("weight-input").value;
+  APP.weekLogs[APP.currentWeek].weight=v;
+  stSave();
+  const w=WEEKS[APP.currentWeek];
+  const fb=document.getElementById("weight-feedback");
+  const inp=document.getElementById("weight-input");
+  if(v){
+    const diff=parseFloat(v)-w.targetWeight;
+    fb.textContent=diff<=0?`✓ +${Math.abs(diff).toFixed(1)} d'avance`:`⚠ +${diff.toFixed(1)} kg vs cible`;
+    fb.style.color=diff<=0?C.green:C.yellow;
+    inp.style.color=diff<=0?C.green:C.text;
+    document.getElementById("actual-weight-card").style.border=`1px solid ${diff<=0?C.green+"40":C.border}`;
+  }else{fb.textContent="";inp.style.color=C.text;}
+  // Update lost badge
+  const lastW=[...APP.weekLogs].reverse().find(l=>l.weight)?.weight;
+  const lost=lastW?Math.max(0,90-parseFloat(lastW)).toFixed(1):null;
+  const badge=document.getElementById("tracker-lost-badge");
+  if(lost){badge.style.display="block";badge.innerHTML=`−${lost} <span style="font-size:9px;color:${C.textDim};font-weight:400">/ 9 kg</span>`;}
+  document.getElementById("goal-progress-fill").style.width=(lost?Math.min(100,(parseFloat(lost)/9)*100):0)+"%";
+}
+
+function onWaistInput(){APP.weekLogs[APP.currentWeek].waist=document.getElementById("waist-input").value;stSave();}
+function onNotesInput(){APP.weekLogs[APP.currentWeek].notes=document.getElementById("notes-input").value;stSave();}
+
+function prevWeek(){if(APP.currentWeek>0){APP.currentWeek--;renderCurrentWeek();renderWeekDots();}}
+
+function validateWeek(){
+  const prevDone = APP.weekLogs.filter(l=>l.done).length;
+  APP.weekLogs[APP.currentWeek].done=true;
+  if(APP.currentWeek<WEEKS.length-1)APP.currentWeek++;
+  stSave();
+  renderCurrentWeek();
+  renderWeekDots();
+  renderPersona();
+  renderHeader();
+  checkEvolution(prevDone);
+}
+
+function setTrackerView(v){
+  APP.trackerView=v;
+  ["week","curve","global"].forEach(x=>{
+    document.getElementById("tracker-"+x+"-view").style.display=x===v?(x==="week"?"block":"flex"):"none";
+    document.getElementById("tv-"+x).classList.toggle("active",x===v);
+  });
+  document.getElementById("tracker-curve-view").style.flexDirection="column";
+  document.getElementById("tracker-curve-view").style.gap="12px";
+  if(v==="curve")renderCurve();
+  if(v==="global")renderGlobal();
+}
+
+function renderCurve(){
+  const W=340,H=160,P={t:20,r:12,b:32,l:40};
+  const iW=W-P.l-P.r,iH=H-P.t-P.b;
+  const minV=79.5,maxV=91;
+  const xS=i=>P.l+(i/WEEKS.length)*iW;
+  const yS=v=>P.t+iH-((v-minV)/(maxV-minV))*iH;
+  const targets=[90,...WEEKS.map(w=>w.targetWeight)];
+  const actuals=APP.weekLogs.map((l,i)=>l.weight?{x:xS(i+1),y:yS(parseFloat(l.weight)),v:l.weight}:null).filter(Boolean);
+  let svg=`<g>`;
+  [90,88,86,84,82,81].forEach(v=>{
+    svg+=`<line x1="${P.l}" y1="${yS(v)}" x2="${W-P.r}" y2="${yS(v)}" stroke="${v===81?"rgba(0,255,120,0.2)":"rgba(255,255,255,0.03)"}" stroke-width="${v===81?1:.5}"/>`;
+    svg+=`<text x="${P.l-4}" y="${yS(v)+4}" text-anchor="end" font-size="8" fill="${v===81?C.green:C.textDim}">${v}</text>`;
+  });
+  svg+=`<rect x="${xS(12)}" y="${P.t}" width="${xS(13)-xS(12)}" height="${iH}" fill="rgba(0,255,120,0.04)" rx="3"/>`;
+  svg+=`<text x="${xS(12.5)}" y="${P.t+8}" text-anchor="middle" font-size="7" fill="${C.green}" font-weight="700">SEPT</text>`;
+  svg+=`<line x1="${P.l}" y1="${yS(81)}" x2="${W-P.r}" y2="${yS(81)}" stroke="${C.green}" stroke-width=".8" stroke-dasharray="3,3" opacity=".5"/>`;
+  svg+=`<polyline points="${targets.map((v,i)=>`${xS(i)},${yS(v)}`).join(" ")}" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="1.5" stroke-dasharray="4,3"/>`;
+  if(actuals.length>1)svg+=`<polyline points="${actuals.map(a=>`${a.x},${a.y}`).join(" ")}" fill="none" stroke="${C.green}" stroke-width="2" stroke-linecap="round"/>`;
+  actuals.forEach(a=>{svg+=`<circle cx="${a.x}" cy="${a.y}" r="4" fill="${C.bg}" stroke="${C.green}" stroke-width="2"/><circle cx="${a.x}" cy="${a.y}" r="2" fill="${C.green}"/><text x="${a.x}" y="${a.y-8}" text-anchor="middle" font-size="8" fill="${C.green}" font-weight="700">${a.v}</text>`;});
+  targets.forEach((v,i)=>{svg+=`<circle cx="${xS(i)}" cy="${yS(v)}" r="2" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="1"/>`;});
+  WEEKS.forEach((w,i)=>{svg+=`<text x="${xS(i+1)}" y="${H-4}" text-anchor="middle" font-size="7" fill="${C.textDim}">S${w.week}</text>`;});
+  svg+="</g>";
+  document.getElementById("curve-svg").innerHTML=svg;
+
+  const lastW=[...APP.weekLogs].reverse().find(l=>l.weight)?.weight;
+  const lost=lastW?Math.max(0,90-parseFloat(lastW)).toFixed(1):null;
+  document.getElementById("curve-stats").innerHTML=[
+    {l:"DÉPART",v:"90 kg",c:C.textDim},{l:"OBJECTIF",v:"81 kg",c:C.green},
+    {l:"À PERDRE",v:"−9 kg",c:C.purple},{l:"PERDU",v:lost?`−${lost} kg`:"—",c:C.yellow}
+  ].map(({l,v,c})=>`<div style="background:${C.surface};border-radius:10px;padding:10px;text-align:center"><div class="label" style="margin-bottom:4px">${l}</div><div class="bebas" style="font-size:16px;color:${c};letter-spacing:.05em">${v}</div></div>`).join("");
+
+  // Table
+  const tbody=document.getElementById("target-tbody");
+  tbody.innerHTML="";
+  WEEKS.forEach((wk,i)=>{
+    const l=APP.weekLogs[i];const actual=l.weight?parseFloat(l.weight):null;
+    const diff=actual?(actual-wk.targetWeight).toFixed(1):null;const ph=PHASES[wk.phase];
+    const tr=document.createElement("tr");
+    tr.onclick=()=>{APP.currentWeek=i;setTrackerView("week");renderCurrentWeek();renderWeekDots();};
+    tr.style.background=wk.week===12?"rgba(0,255,120,.03)":"transparent";
+    tr.innerHTML=`<td><span class="bebas" style="font-size:14px;color:${ph.color};letter-spacing:.1em">S${wk.week}</span></td>
+      <td class="mono" style="font-size:9px;color:${C.textDim};white-space:nowrap">${fmtShort(wk.startDate)}</td>
+      <td style="font-size:9px;font-weight:700;color:${ph.color};letter-spacing:.1em">${wk.phase}</td>
+      <td class="mono" style="font-size:11px;color:${C.textDim}">${wk.targetWeight}</td>
+      <td class="mono" style="font-size:11px;color:${C.text};font-weight:700">${actual||"—"}</td>
+      <td class="mono" style="font-size:10px;font-weight:700;color:${!diff?C.muted:parseFloat(diff)<=0?C.green:C.yellow}">${diff?(parseFloat(diff)<=0?diff:"+"+diff):"—"}</td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+function renderGlobal(){
+  const g=document.getElementById("global-grid");
+  g.innerHTML="";
+  WEEKS.forEach((wk,i)=>{
+    const l=APP.weekLogs[i];const ph=PHASES[wk.phase];const onTarget=l.weight&&parseFloat(l.weight)<=wk.targetWeight;
+    const card=document.createElement("div");
+    card.className="global-card";
+    card.style.border=`1px solid ${l.done?ph.color+"40":wk.week===12?C.green+"20":C.border}`;
+    card.style.background=l.done?ph.bg:C.card;
+    card.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px"><span class="bebas" style="font-size:18px;color:${ph.color};letter-spacing:.1em">S${wk.week}</span><span style="font-size:12px">${l.done?"✓":wk.week===12?"🎯":""}</span></div>
+      <div class="label" style="margin-bottom:6px">${wk.phase}</div>
+      <div class="mono" style="font-size:9px;color:${C.textDim};margin-bottom:2px">${fmtShort(wk.startDate)}</div>
+      <div class="mono" style="font-size:10px;font-weight:700;color:${C.muted}">→${wk.targetWeight}kg</div>
+      ${l.weight?`<div class="bebas" style="font-size:14px;color:${onTarget?C.green:C.yellow};margin-top:6px;letter-spacing:.05em">${l.weight}kg ${onTarget?"✓":"⚠"}</div>`:`<div style="font-size:9px;color:${C.muted};margin-top:6px">${l.done?"—":"à venir"}</div>`}`;
+    card.onclick=()=>{APP.currentWeek=i;setTrackerView("week");renderCurrentWeek();renderWeekDots();};
+    g.appendChild(card);
+  });
+}
+
+/* ═══════════════════════════════════════════
+   CALORIES
+═══════════════════════════════════════════ */
+function updateCaloriesDisplay(){
+  const target=parseInt(APP.user?.kcal)||2000;
+  const total=APP.meals.reduce((a,m)=>a+(m.kcal||0),0);
+  const pct=Math.min(100,(total/target)*100);
+  const remaining=target-total;
+  const barColor=pct>110?C.red:pct>90?C.yellow:C.green;
+  document.getElementById("total-kcal-display").textContent=total;
+  document.getElementById("total-kcal-display").style.color=barColor;
+  document.getElementById("target-kcal-display").textContent=target;
+  document.getElementById("remaining-kcal").textContent=(remaining>=0?"+":"")+remaining;
+  document.getElementById("remaining-kcal").style.color=remaining>=0?C.green:C.red;
+  document.getElementById("kcal-progress").style.width=pct+"%";
+  document.getElementById("kcal-progress").style.background=barColor;
+  document.getElementById("prot-total").innerHTML=Math.round(APP.meals.reduce((a,m)=>a+(m.prot||0),0))+"<span style='font-size:10px'>g</span>";
+  document.getElementById("carb-total").innerHTML=Math.round(APP.meals.reduce((a,m)=>a+(m.carbs||0),0))+"<span style='font-size:10px'>g</span>";
+  document.getElementById("fat-total").innerHTML=Math.round(APP.meals.reduce((a,m)=>a+(m.fat||0),0))+"<span style='font-size:10px'>g</span>";
+  renderMeals();
+}
+
+function renderMeals(){
+  const list=document.getElementById("meals-list");
+  const empty=document.getElementById("meals-empty");
+  list.innerHTML="";
+  if(APP.meals.length===0){empty.style.display="block";return;}
+  empty.style.display="none";
+  [...APP.meals].reverse().forEach(m=>{
+    const card=document.createElement("div");
+    card.className="meal-card fu";
+    card.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
+      <div style="font-size:12px;color:${C.text};line-height:1.5;flex:1;padding-right:10px">${m.desc}</div>
+      <div style="text-align:right;flex-shrink:0"><div class="bebas" style="font-size:22px;color:${C.green};letter-spacing:.05em">${m.kcal}<span style="font-size:11px">kcal</span></div><div style="font-size:9px;color:${C.textDim}">${m.time}</div></div>
+    </div>
+    ${!m.error?`<div style="display:flex;gap:8px;flex-wrap:wrap">
+      <span class="macro-chip" style="color:${C.blue};background:${C.blue}15">P ${Math.round(m.prot)}g</span>
+      <span class="macro-chip" style="color:${C.yellow};background:${C.yellow}15">G ${Math.round(m.carbs)}g</span>
+      <span class="macro-chip" style="color:${C.orange};background:${C.orange}15">L ${Math.round(m.fat)}g</span>
+      ${m.note?`<span style="font-size:10px;color:${C.textDim};font-style:italic">💡 ${m.note}</span>`:""}
+    </div>`:""}
+    <button onclick="deleteMeal(${m.id})" style="margin-top:8px;font-size:9px;color:${C.textDim};background:none;border:none;cursor:pointer">✕ Supprimer</button>`;
+    list.appendChild(card);
+  });
+}
+
+function deleteMeal(id){APP.meals=APP.meals.filter(m=>m.id!==id);updateCaloriesDisplay();}
+
+async function addMeal(){
+  const inp=document.getElementById("meal-input");
+  const desc=inp.value.trim();if(!desc)return;
+  inp.value="";
+  const btn=document.getElementById("meal-send-btn");
+  btn.textContent="⟳";btn.disabled=true;
+  const stream=document.getElementById("meal-stream");stream.style.display="block";stream.textContent="";
+  const sys=`Tu es expert en nutrition. Retourne UNIQUEMENT un JSON valide sans markdown:\n{"kcal":NUMBER,"proteines":NUMBER,"glucides":NUMBER,"lipides":NUMBER,"note":"STRING max 8 mots"}`;
+  const full=await askClaude(sys,`Repas: "${desc}". Objectif: ${APP.user?.kcal||2000} kcal/j. Peptides: ${APP.user?.peptides?.join(",")||"aucun"}.`,t=>{stream.textContent=t;});
+  stream.style.display="none";btn.textContent="↑";btn.disabled=false;
+  try{
+    const data=JSON.parse(full.replace(/```json|```/g,"").trim());
+    APP.meals.push({id:Date.now(),desc,kcal:data.kcal,prot:data.proteines,carbs:data.glucides,fat:data.lipides,note:data.note,time:new Date().toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"})});
+  }catch{
+    APP.meals.push({id:Date.now(),desc,kcal:0,prot:0,carbs:0,fat:0,note:"Erreur analyse",time:"--:--",error:true});
+  }
+  updateCaloriesDisplay();
+}
+
+document.addEventListener("keydown",e=>{
+  if(e.target.id==="meal-input"&&e.key==="Enter"&&!e.shiftKey){e.preventDefault();addMeal();}
+});
+
+/* ═══════════════════════════════════════════
+   COACH IA
+═══════════════════════════════════════════ */
+let coachMessages=[];
+
+function initCoach(){
+  const u=APP.user||{};
+  coachMessages=[{role:"assistant",content:`Salut ${u.name||"champion"} 🥊 Je suis ton coach IA peptides. Stack : ${u.peptides?.join(", ")||"aucun"}. Objectif : ${u.weight}kg → ${u.goalWeight}kg. Qu'est-ce qu'on travaille ?`}];
+  renderCoachMessages();
+  // Quick chips
+  const chips=document.getElementById("quick-chips");
+  chips.innerHTML=["Optimiser mes injections ?","Que manger avant la boxe ?","J'ai un plateau depuis 2 sem","Protocole MOTS-C optimal ?","Signes de surdosage ?"].map(q=>`<button class="quick-chip" onclick="setCoachInput('${q}')">${q}</button>`).join("");
+}
+
+function setCoachInput(q){document.getElementById("coach-input").value=q;}
+
+function renderCoachMessages(){
+  const c=document.getElementById("coach-messages");
+  c.innerHTML=coachMessages.map(m=>`<div class="msg ${m.role}" ${m.streaming?`id="streaming-msg"`:""}>${m.content.replace(/\n/g,"<br>")}${m.streaming?`<span class="pulse" style="color:${C.green}">▋</span>`:""}</div>`).join("");
+  c.scrollTop=c.scrollHeight;
+}
+
+function coachKeyDown(e){if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();sendCoach();}}
+
+async function sendCoach(){
+  const inp=document.getElementById("coach-input");
+  const msg=inp.value.trim();if(!msg)return;
+  inp.value="";
+  const u=APP.user||{};
+  coachMessages.push({role:"user",content:msg});
+  coachMessages.push({role:"assistant",content:"",streaming:true});
+  renderCoachMessages();
+  const idx=coachMessages.length-1;
+  const sys=`Tu es coach expert en peptides, nutrition et performance sportive.
+Profil: ${u.name||"?"},${u.weight||"?"}kg→${u.goalWeight||"?"}kg, sport: ${u.sport||"?"}.
+Peptides: ${u.peptides?.join(",")||"aucun"}. TMB: ${u.tmb||"?"} kcal. Objectif: ${u.kcal||"?"} kcal/j.
+Réponds TOUJOURS en français. Max 150 mots. Direct et expert.`;
+  await askClaude(sys,msg,t=>{coachMessages[idx].content=t;renderCoachMessages();});
+  coachMessages[idx].streaming=false;
+  renderCoachMessages();
+}
+
+/* ═══════════════════════════════════════════
+   STACK
+═══════════════════════════════════════════ */
+function renderStack(){
+  // Active stack
+  const list=document.getElementById("active-peptides-list");
+  if(APP.selectedPeptides.length===0){
+    list.innerHTML=`<div style="font-size:12px;color:${C.textDim};text-align:center;padding:16px 0">Aucun peptide sélectionné</div>`;
+  }else{
+    list.innerHTML=APP.selectedPeptides.map(p=>`<div style="background:rgba(0,255,120,.08);border:1px solid rgba(0,255,120,.2);border-radius:12px;padding:8px 12px"><div style="display:flex;align-items:center;gap:6px;margin-bottom:2px"><span>${PEPTIDE_DB[p].emoji}</span><span style="font-size:11px;font-weight:700;color:${C.green}">${p}</span></div><div style="font-size:9px;color:${C.textDim}">${PEPTIDE_DB[p].dose} · ${PEPTIDE_DB[p].freq}</div></div>`).join("");
+  }
+  // Synergies
+  const synBlock=document.getElementById("synergy-block");
+  if(APP.selectedPeptides.length>=2){
+    const syns=APP.selectedPeptides.filter(p=>(PEPTIDE_DB[p]?.synergy||[]).some(s=>APP.selectedPeptides.includes(s)));
+    if(syns.length>0){
+      synBlock.style.display="block";
+      synBlock.style.cssText=`display:block;background:${C.surface};border-radius:12px;border:1px solid rgba(0,255,120,.1);padding:12px`;
+      synBlock.innerHTML=`<div style="font-size:9px;color:${C.green};letter-spacing:.15em;font-weight:700;margin-bottom:8px">✓ SYNERGIES</div>`+
+        APP.selectedPeptides.map(p=>{const syn=(PEPTIDE_DB[p]?.synergy||[]).filter(s=>APP.selectedPeptides.includes(s));if(!syn.length)return"";return`<div style="font-size:11px;color:${C.text};margin-bottom:4px">${PEPTIDE_DB[p].emoji} <b>${p}</b> ↔ ${syn.join(", ")}</div>`;}).join("");
+    }else synBlock.style.display="none";
+  }else synBlock.style.display="none";
+
+  // Library
+  const lib=document.getElementById("peptide-library");
+  lib.innerHTML="";
+  const cats=[...new Set(Object.values(PEPTIDE_DB).map(p=>p.cat))];
+  cats.forEach(cat=>{
+    const section=document.createElement("div");
+    section.className="fu2";
+    section.style.marginBottom="4px";
+    section.innerHTML=`<div class="label" style="margin-bottom:8px;text-transform:uppercase">${cat}</div>`;
+    Object.entries(PEPTIDE_DB).filter(([,v])=>v.cat===cat).forEach(([name,db])=>{
+      const sel=APP.selectedPeptides.includes(name);
+      const row=document.createElement("div");
+      row.className="peptide-row"+(sel?" active-p":"");
+      row.innerHTML=`<div class="peptide-row-header">
+        <span style="font-size:20px">${db.emoji}</span>
+        <div style="flex:1;cursor:pointer" onclick="toggleDetail('detail-${name}')">
+          <div style="font-size:12px;font-weight:700;color:${sel?C.green:C.text}">${name}</div>
+          <div style="font-size:10px;color:${C.textDim}">${db.dose} · ${db.freq}</div>
+        </div>
+        <button class="add-btn ${sel?"added":"not-added"}" onclick="togglePeptide('${name}')">${sel?"✓ ACTIF":"+ AJOUTER"}</button>
+      </div>
+      <div class="peptide-detail" id="detail-${name}">
+        <div style="margin-top:10px">${db.effect}</div>
+        ${db.blend?`<div style="margin-top:10px;background:${C.bg};border-radius:10px;padding:10px">
+          <div style="font-size:9px;color:${C.green};letter-spacing:.12em;font-weight:700;margin-bottom:8px">COMPOSITION DU BLEND</div>
+          <div class="blend-grid">
+            ${[{n:"GHK-Cu",mg:db.blendDetails?.ghkCu,emoji:"🟤",role:"Réparation ADN/collagène"},{n:"BPC-157",mg:db.blendDetails?.bpc157,emoji:"🔵",role:"Tendineux/gut health"},{n:"TB-500",mg:db.blendDetails?.tb500,emoji:"🟣",role:"Musculaire systémique"},{n:"KPV",mg:db.blendDetails?.kpv,emoji:"🟡",role:"Anti-inflammatoire NF-κB"}].map(({n,mg,emoji,role})=>`<div class="blend-card"><div style="display:flex;align-items:center;gap:5px;margin-bottom:3px"><span style="font-size:12px">${emoji}</span><span style="font-size:10px;font-weight:700;color:${C.text}">${n}</span><span style="margin-left:auto;font-size:10px;font-weight:700;color:${C.green};font-family:'JetBrains Mono'">${mg}</span></div><div style="font-size:9px;color:${C.textDim}">${role}</div></div>`).join("")}
+          </div>
+          <div style="margin-top:8px;font-size:9px;color:${C.textDim};text-align:center">Vial total : <span style="color:${C.green};font-weight:700">80mg</span> · 1 injection SC le soir</div>
+        </div>`:""}
+        ${db.synergy.length>0?`<div style="margin-top:6px;color:${C.green};font-size:10px">✓ Synergie : ${db.synergy.join(", ")}</div>`:""}
+      </div>`;
+      section.appendChild(row);
+    });
+    lib.appendChild(section);
+  });
+}
+
+function toggleDetail(id){
+  const el=document.getElementById(id);
+  el.classList.toggle("open");
+}
+
+function togglePeptide(name){
+  const i=APP.selectedPeptides.indexOf(name);
+  if(i>-1)APP.selectedPeptides.splice(i,1);
+  else APP.selectedPeptides.push(name);
+  renderStack();
+}
+
+async function analyzeStack(){
+  const btn=document.getElementById("analyze-btn");
+  btn.textContent="Analyse en cours...";btn.disabled=true;
+  const res=document.getElementById("stack-analysis");
+  res.style.display="block";res.textContent="";
+  const u=APP.user||{};
+  await askClaude("Expert peptides. Réponds en français. Max 120 mots. Direct.",
+    `Stack: ${APP.selectedPeptides.join(",")||"vide"}. Objectif: ${u.sport||"performance"}, ${u.weight}kg→${u.goalWeight}kg.\nDonne: 1) Évaluation (2 phrases) 2) Ajout/retrait si pertinent 3) Timing en 2 bullets.`,
+    t=>{res.textContent=t;});
+  btn.textContent="🧠 Analyse IA du stack";btn.disabled=false;
+}
+
+/* ═══════════════════════════════════════════
+   CALCULATEUR
+═══════════════════════════════════════════ */
+function renderCalc(){
+  const chips=document.getElementById("calc-peptide-chips");
+  chips.innerHTML=Object.keys(PEPTIDE_DB).map(p=>`<button class="peptide-chip${p===APP.calcPeptide?" active":""}" onclick="setCalcPeptide('${p}')">${PEPTIDE_DB[p].emoji} ${p}</button>`).join("");
+  // Quick buttons
+  document.getElementById("vial-quick").innerHTML=[2,5,10,15].map(v=>`<button class="quick-btn" onclick="setCalcQuick('vial','${v}')">${v}mg</button>`).join("");
+  document.getElementById("water-quick").innerHTML=[1,2,3,5].map(v=>`<button class="quick-btn" onclick="setCalcQuick('water','${v}')">${v}ml</button>`).join("");
+  document.getElementById("dose-quick").innerHTML=[50,100,250,500,1000,2000,5000,10000].map(v=>`<button class="quick-btn" onclick="setCalcQuick('dose','${v}')">${v>=1000?v/1000+"mg":v+"mcg"}</button>`).join("");
+}
+
+function setCalcPeptide(p){
+  APP.calcPeptide=p;
+  document.querySelectorAll("#calc-peptide-chips .peptide-chip").forEach(b=>b.classList.toggle("active",b.textContent.includes(p)));
+  const info=document.getElementById("calc-peptide-info");
+  if(PEPTIDE_DB[p]){info.style.display="block";info.innerHTML=`Dose typique : <span style="color:${C.green};font-weight:700">${PEPTIDE_DB[p].dose}</span> · ${PEPTIDE_DB[p].freq}`;}
+  calcDilution();
+}
+
+function setSyringe(u){
+  APP.calcSyringe=u;
+  [30,50,100].forEach(x=>{const btn=document.getElementById("syr-"+x);if(btn)btn.className="add-btn "+(x===u?"added":"not-added");});
+  calcDilution();
+}
+
+function setCalcQuick(field,val){
+  const ids={vial:"calc-vial",water:"calc-water",dose:"calc-dose"};
+  document.getElementById(ids[field]).value=val;
+  document.querySelectorAll(`#${field}-quick .quick-btn`).forEach(b=>b.classList.toggle("active",b.textContent===val+"mg"||b.textContent===val+"ml"||b.textContent===(parseInt(val)>=1000?parseInt(val)/1000+"mg":val+"mcg")));
+  calcDilution();
+}
+
+function calcDilution(){
+  const vialMcg=(parseFloat(document.getElementById("calc-vial").value)||0)*1000;
+  const waterNum=parseFloat(document.getElementById("calc-water").value)||0;
+  const doseNum=parseFloat(document.getElementById("calc-dose").value)||0;
+  const syringe=APP.calcSyringe;
+  const concentration=waterNum>0?vialMcg/waterNum:0;
+  const syringeVol=syringe===30?.3:syringe===50?.5:1;
+  const volumeMl=concentration>0?doseNum/concentration:0;
+  const graduation=syringeVol>0?(volumeMl/syringeVol)*syringe:0;
+  const conc=document.getElementById("concentration-display");
+  if(concentration>0){conc.style.display="flex";document.getElementById("concentration-val").textContent=concentration.toFixed(0)+" mcg/ml";}
+  else conc.style.display="none";
+  const result=document.getElementById("calc-result");
+  if(!doseNum||!concentration){result.style.display="none";return;}
+  result.style.display="block";
+  const overflow=graduation>syringe;
+  const valid=graduation>0&&!overflow;
+  const gradPct=valid?Math.min(100,(graduation/syringe)*100):0;
+  if(overflow){
+    result.innerHTML=`<div style="background:rgba(255,107,107,.06);border-radius:18px;border:2px solid rgba(248,113,113,.4);padding:20px;text-align:center"><div style="font-size:24px;margin-bottom:8px">⚠️</div><div style="font-size:13px;font-weight:700;color:${C.red}">Volume insuffisant</div><div style="font-size:11px;color:${C.textDim};margin-top:4px">Cette dose dépasse la seringue. Utilise 1ml ou réduis la dose.</div></div>`;
+    return;
+  }
+  const marks=Array.from({length:syringe/10},(_,i)=>`<div style="position:absolute;left:${((i+1)*10/syringe)*100}%;top:0;bottom:0;width:1px;background:rgba(255,255,255,.1)"></div>`).join("");
+  result.innerHTML=`<div style="background:rgba(0,255,120,.06);border-radius:18px;border:2px solid rgba(0,255,120,.4);padding:20px">
+    <div style="text-align:center;margin-bottom:16px">
+      <div style="font-size:10px;color:${C.textDim};letter-spacing:.2em;margin-bottom:4px">TIRE LA SERINGUE JUSQU'À</div>
+      <div class="bebas" style="font-size:56px;color:${C.green};letter-spacing:.05em;line-height:1;text-shadow:0 0 30px rgba(0,255,120,.6)">${Math.round(graduation)} <span style="font-size:22px">unités</span></div>
+      <div style="font-size:12px;color:${C.textDim};margin-top:4px">soit ${volumeMl.toFixed(3)} ml · ${doseNum} mcg</div>
+    </div>
+    <div style="max-width:300px;margin:0 auto">
+      <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+        <span style="font-size:9px;color:${C.textDim}">0</span>
+        <span style="font-size:9px;color:${C.green};font-weight:700">${Math.round(graduation)} ← ICI</span>
+        <span style="font-size:9px;color:${C.textDim}">${syringe}</span>
+      </div>
+      <div class="syringe-visual"><div class="syringe-fill" style="width:${gradPct}%"></div>${marks}</div>
+    </div>
+    <div style="margin-top:16px;display:grid;grid-template-columns:1fr 1fr;gap:8px">
+      ${[{l:"Volume",v:volumeMl.toFixed(3)+" ml"},{l:"Graduation",v:Math.round(graduation)+" u."},{l:"Concentration",v:concentration.toFixed(0)+" mcg/ml"},{l:"Doses vial",v:Math.floor(vialMcg/doseNum)}].map(({l,v})=>`<div style="background:${C.surface};border-radius:10px;padding:8px 10px"><div class="label" style="margin-bottom:3px">${l}</div><div class="mono" style="font-size:13px;font-weight:700;color:${C.text}">${v}</div></div>`).join("")}
+    </div>
+  </div>`;
+}
+
+/* ═══════════════════════════════════════════
+   PERSONA
+═══════════════════════════════════════════ */
+function renderPersona(){
+  const weeksCompleted=APP.weekLogs.filter(l=>l.done).length;
+  const persona=getPersona(weeksCompleted);
+  const nextP=PERSONAS.find(p=>p.weeks>weeksCompleted);
+  const pct=nextP?Math.min(100,((weeksCompleted-persona.weeks)/(nextP.weeks-persona.weeks))*100):100;
+
+  const hero=document.getElementById("persona-hero");
+  hero.style.border=`2px solid ${persona.color}30`;
+  document.getElementById("persona-glow").style.background=`radial-gradient(circle at 50% 30%,${persona.color}08,transparent 70%)`;
+  document.getElementById("persona-emoji").textContent=persona.emoji;
+  document.getElementById("persona-name").textContent=persona.name.toUpperCase();
+  document.getElementById("persona-name").style.color=persona.color;
+  document.getElementById("persona-name").style.textShadow=`0 0 30px ${persona.color}40`;
+  document.getElementById("persona-desc").textContent=`"${persona.desc}"`;
+  const badge=document.getElementById("persona-weeks-badge");
+  badge.style.background=`${persona.color}15`;badge.style.borderColor=`${persona.color}30`;
+  badge.innerHTML=`<span style="font-size:12px;font-weight:700;color:${persona.color}">${weeksCompleted} semaines</span><span style="font-size:10px;color:${C.textDim}">complétées</span>`;
+
+  const nextCard=document.getElementById("next-persona-card");
+  if(nextP){
+    nextCard.style.display="block";
+    document.getElementById("next-persona-label").innerHTML=`${nextP.emoji} <span style="font-family:'Bebas Neue';font-size:20px;color:${nextP.color};letter-spacing:.08em">${nextP.name.toUpperCase()}</span>`;
+    document.getElementById("next-persona-weeks").textContent=(nextP.weeks-weeksCompleted)+" sem.";
+    document.getElementById("persona-progress-fill").style.cssText=`width:${pct}%;background:linear-gradient(90deg,${persona.color},${nextP.color})`;
+    document.getElementById("persona-from-label").textContent=persona.name;document.getElementById("persona-from-label").style.color=persona.color;
+    document.getElementById("persona-pct-label").textContent=Math.round(pct)+"%";
+    document.getElementById("persona-to-label").textContent=nextP.name;document.getElementById("persona-to-label").style.color=nextP.color;
+  }else nextCard.style.display="none";
+
+  const tree=document.getElementById("evo-tree");
+  tree.innerHTML=PERSONAS.map(p=>{
+    const unlocked=weeksCompleted>=p.weeks;const current=persona.stage===p.stage;
+    return `<div class="evo-item" style="opacity:${unlocked?1:.35}">
+      <div class="evo-badge" style="background:${current?p.color+"20":unlocked?p.color+"10":C.surface};border-color:${current?p.color:unlocked?p.color+"40":C.border};filter:${current?`drop-shadow(0 0 8px ${p.color}60)`:"none"}">
+        ${p.emoji}
+      </div>
+      <div style="flex:1">
+        <div style="display:flex;align-items:center;gap:6px">
+          <span style="font-size:13px;font-weight:800;color:${current?p.color:unlocked?C.text:C.textDim}">${p.name}</span>
+          ${current?`<span style="font-size:9px;color:${p.color};background:${p.color}15;padding:2px 8px;border-radius:20px;letter-spacing:.1em">ACTUEL</span>`:""}
+          ${!unlocked?`<span style="font-size:9px;color:${C.textDim}">Sem. ${p.weeks}+</span>`:""}
+        </div>
+        <div style="font-size:10px;color:${C.textDim};margin-top:2px;line-height:1.4">${p.desc}</div>
+      </div>
+    </div>`;
+  }).join("");
+}
+
+/* ═══════════════════════════════════════════
+   NAV
+═══════════════════════════════════════════ */
+function switchTab(tab){
+  document.querySelectorAll(".tab-content").forEach(t=>t.classList.remove("active"));
+  document.querySelectorAll(".nav-btn").forEach(b=>b.classList.remove("active"));
+  document.getElementById("tab-"+tab).classList.add("active");
+  document.getElementById("nav-"+tab).classList.add("active");
+  if(tab==="persona")renderPersona();
+  if(tab==="calories")updateCaloriesDisplay();
+}
+
+/* ═══════════════════════════════════════════
+   BOOT
+═══════════════════════════════════════════ */
+window.addEventListener("load",()=>{
+  initSetup();
+  const saved=stLoad();
+  if(saved?.user){
+    Object.assign(APP,saved);
+    document.getElementById("loading-screen").style.display="none";
+    document.getElementById("setup-screen").style.display="none";
+    showMainApp();
+  }else{
+    document.getElementById("loading-screen").style.display="none";
+    document.getElementById("setup-screen").style.display="flex";
+    document.getElementById("setup-screen").classList.add("active");
+  }
+});
+
+/* ═══════════════════════════════════════════
+   EVOLUTION NOTIFICATION SYSTEM
+═══════════════════════════════════════════ */
+
+const EVO_MESSAGES = {
+  "Chrysalide": {
+    title:"Première évolution 🫧",
+    msg:"3 semaines bouclées. Le corps commence à changer. La chrysalide ne ressemble pas encore au papillon — mais la transformation est déjà en marche. Continue exactement comme ça.",
+    tip:"Rappel : régularité > intensité. C'est la constance qui fait la différence."
+  },
+  "Salamèche": {
+    title:"La flamme s'allume 🦎",
+    msg:"6 semaines. Tu as traversé la relance, les premières nausées, les doutes. Et tu es toujours là. Les peptides tournent à plein régime. Les prochaines semaines vont être les meilleures.",
+    tip:"Tu devrais voir une vraie différence sur la balance et dans le miroir maintenant."
+  },
+  "Reptincel": {
+    title:"Tu brûles 🔥",
+    msg:"9 semaines de protocole. Le métabolisme est en feu. MOTS-C revient la semaine prochaine — le boost va être réel. Tu n'es plus le même qu'au départ.",
+    tip:"Objectif septembre dans 3 semaines. Tu es en avance sur le planning."
+  },
+  "Dracaufeu": {
+    title:"OBJECTIF ATTEINT 🐉",
+    msg:"12 semaines. Tu l'as fait. 81 kg visés, catégorie atteinte, transformation complète. Ce protocole, cette discipline, cette constance — c'est toi qui l'as fait.",
+    tip:"Bilan complet cette semaine. Photographies ton résultat. Tu l'as mérité."
+  },
+  "Dracolosse": {
+    title:"LÉGENDE ⚡🐉",
+    msg:"16 semaines. Tu as repoussé l'objectif initial et tu continues. Il n'y a plus de plafond. Dracolosse n'existe pas dans la nature — seulement pour ceux qui refusent de s'arrêter.",
+    tip:"C'est le moment de définir ton prochain cycle. Le meilleur reste à venir."
+  }
+};
+
+let lastPersonaStage = -1;
+
+function checkEvolution(previousWeeksDone){
+  const currentDone = APP.weekLogs.filter(l=>l.done).length;
+  const prevPersona = getPersona(previousWeeksDone);
+  const newPersona  = getPersona(currentDone);
+
+  // Evolution happened
+  if(newPersona.stage > prevPersona.stage && newPersona.stage > 0){
+    setTimeout(()=> showEvoModal(newPersona), 600);
+  }
+}
+
+function showEvoModal(persona){
+  const msg = EVO_MESSAGES[persona.name] || {
+    title:"Évolution !",
+    msg:"Tu progresses. Continue comme ça.",
+    tip:""
+  };
+
+  // Populate modal
+  document.getElementById("evo-emoji-big").textContent = persona.emoji;
+  document.getElementById("evo-modal").style.cssText += `;background:linear-gradient(135deg,${persona.color}12,#111820);border-color:${persona.color}60`;
+  document.getElementById("evo-week-badge").style.cssText = `background:${persona.color}20;border-color:${persona.color}40;color:${persona.color};display:inline-flex;align-items:center;gap:6px;padding:4px 14px;border-radius:20px;font-size:10px;font-weight:700;margin-bottom:16px;border:1px solid`;
+  document.getElementById("evo-week-badge").textContent = "SEMAINE " + APP.weekLogs.filter(l=>l.done).length + " COMPLÉTÉE";
+  document.getElementById("evo-label").style.color = persona.color;
+  document.getElementById("evo-name").textContent = persona.name.toUpperCase();
+  document.getElementById("evo-name").style.color = persona.color;
+  document.getElementById("evo-name").style.textShadow = `0 0 40px ${persona.color}60`;
+  document.getElementById("evo-desc").textContent = persona.desc;
+  document.getElementById("evo-desc").style.color = "var(--textDim)";
+  document.getElementById("evo-msg").innerHTML = `<strong style="color:${persona.color}">${msg.title}</strong><br><br>${msg.msg}${msg.tip?`<br><br><span style="color:${persona.color};font-weight:700">→ ${msg.tip}</span>`:""}`;
+  document.getElementById("evo-close").style.cssText = `padding:13px 32px;border-radius:13px;font-size:14px;font-weight:800;letter-spacing:.1em;cursor:pointer;border:2px solid ${persona.color}60;background:${persona.color}15;color:${persona.color};width:100%;text-transform:uppercase`;
+
+  // Show overlay
+  document.getElementById("evo-overlay").classList.add("show");
+
+  // Fire particles
+  spawnParticles(persona.color);
+
+  // Vibrate if supported
+  if(navigator.vibrate) navigator.vibrate([100, 50, 200, 50, 300]);
+}
+
+function closeEvoModal(){
+  document.getElementById("evo-overlay").classList.remove("show");
+}
+
+function spawnParticles(color){
+  const N = 24;
+  const centerX = window.innerWidth  / 2;
+  const centerY = window.innerHeight / 2;
+  const colors  = [color, "#fff", "#fbbf24", "#a78bfa", color];
+
+  for(let i=0; i<N; i++){
+    const el = document.createElement("div");
+    el.className = "particle";
+    const size  = 6 + Math.random()*10;
+    const angle = (Math.PI * 2 * i) / N + Math.random()*.5;
+    const dist  = 100 + Math.random()*200;
+    const tx    = Math.cos(angle)*dist;
+    const ty    = Math.sin(angle)*dist - 80;
+    el.style.cssText = `
+      width:${size}px;height:${size}px;
+      left:${centerX-size/2}px;top:${centerY-size/2}px;
+      background:${colors[i%colors.length]};
+      --tx:${tx}px;--ty:${ty}px;
+      animation-delay:${Math.random()*.3}s;
+      animation-duration:${.8+Math.random()*.6}s;
+      border-radius:${Math.random()>.5?"50%":"4px"};
+      opacity:.9;
+    `;
+    document.body.appendChild(el);
+    setTimeout(()=> el.remove(), 2000);
+  }
+}
+</script>
+
+<!-- EVOLUTION MODAL -->
+<div id="evo-overlay">
+  <div id="evo-backdrop" onclick="closeEvoModal()"></div>
+  <div id="evo-modal">
+    <span id="evo-emoji-big"></span>
+    <div id="evo-week-badge"></div>
+    <div id="evo-label">NOUVELLE ÉVOLUTION</div>
+    <div id="evo-name"></div>
+    <div id="evo-desc"></div>
+    <div id="evo-msg"></div>
+    <button id="evo-close" onclick="closeEvoModal()">CONTINUER L'AVENTURE →</button>
+  </div>
+</div>
+
+<script>
+// Service Worker registration for PWA
+if('serviceWorker' in navigator){
+  window.addEventListener('load', function(){
+    navigator.serviceWorker.register('sw.js').then(function(reg){
+      console.log('SW registered');
+    }).catch(function(err){
+      console.log('SW registration failed: ', err);
+    });
+  });
+}
+</script>
+</body>
+</html>
